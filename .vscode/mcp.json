@@ -1,0 +1,21 @@
+{
+	"servers": {
+		"Svelte": {
+			"url": "https://svelte-llm.stanislav.garden/mcp/mcp",
+			"type": "http"
+		},
+		"Skeleton": {
+			"url": "https://www.skeleton.dev/llms-svelte.txt",
+			"type": "http"
+		},
+		"Drizzle": {
+			"url": "https://orm.drizzle.team/llms.txt",
+			"type": "http"
+		},
+		"Valibot": {
+			"url": "https://valibot.dev/llms-full.txt",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}

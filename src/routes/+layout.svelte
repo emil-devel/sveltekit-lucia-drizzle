@@ -1,0 +1,59 @@
+<script lang="ts">
+	import '../app.css';
+	import favicon from '$lib/assets/favicon.svg';
+	import Header from '$lib/site/Header.svelte';
+	import Footer from '$lib/site/Footer.svelte';
+	import { page } from '$app/state';
+	import { Toaster } from '@skeletonlabs/skeleton-svelte';
+	import { toaster } from '$lib/toaster';
+	import { getFlash } from 'sveltekit-flash-message';
+	import { fade } from 'svelte/transition';
+
+	let { children, data } = $props();
+
+	const flash = getFlash(page, {
+		clearAfterMs: 4000,
+		clearOnNavigate: true
+	});
+
+	$effect(() => {
+		if (!$flash) return;
+
+		const t = String($flash.type);
+		if (t === 'error') toaster.error({ title: $flash.message, duration: 4000 });
+		if (t === 'warning') toaster.warning({ title: $flash.message, duration: 4000 });
+		if (t === 'success') toaster.success({ title: $flash.message, duration: 4000 });
+		if (t === 'info') toaster.info({ title: $flash.message, duration: 4000 });
+
+		$flash = undefined;
+	});
+
+	const outer = 'px-2 sm:py-4';
+	const inner = 'w-full max-w-4xl mx-auto  py-4 space-y-4';
+	const border_t = 'border-t-[.1rem] border-t-primary-200-800';
+	const border_b = 'border-b-[.1rem] border-b-primary-200-800';
+</script>
+
+<svelte:head>
+	<link rel="icon" href={favicon} />
+</svelte:head>
+
+<Toaster {toaster} />
+
+<header class="{outer} {border_b}">
+	<div class={inner}>
+		<Header />
+	</div>
+</header>
+<main class="flex-auto {outer}">
+	{#key data.url}
+		<div class={inner} out:fade={{ duration: 300 }} in:fade={{ delay: 300, duration: 300 }}>
+			{@render children?.()}
+		</div>
+	{/key}
+</main>
+<footer class={outer}>
+	<div class="{inner} {border_t}">
+		<Footer />
+	</div>
+</footer>
