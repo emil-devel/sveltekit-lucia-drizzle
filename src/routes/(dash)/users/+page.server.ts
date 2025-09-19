@@ -3,7 +3,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect, setFlash } from 'sveltekit-flash-message/server';
-import { updateUserSchema } from '$lib/valibot';
+import { activeUserSchema, roleUserSchema } from '$lib/valibot';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { superValidate } from 'sveltekit-superforms';
 import { desc } from 'drizzle-orm';
@@ -34,42 +34,45 @@ export const load = (async (event) => {
 		}));
 		return users;
 	};
-	const form = await superValidate(event, valibot(updateUserSchema));
+	const activeForm = await superValidate(event, valibot(activeUserSchema));
+	const roleForm = await superValidate(event, valibot(roleUserSchema));
 
 	return {
 		users: await getUsers(),
-		form
+		activeForm,
+		roleForm
 	};
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-	update: async (event) => {
-		const form = await superValidate(event.request, valibot(updateUserSchema));
-		const { id, username } = form.data;
+	active: async (event) => {
+		const updateForm = await superValidate(event.request, valibot(activeUserSchema));
+		const { id, active } = updateForm.data;
 
-		const user = await db
-			.select()
-			.from(table.user)
-			.where(eq(table.user.username, username as string));
-
-		if (user.at(0)) {
-			setFlash({ type: 'warning', message: `User ${username} already exists!` }, event.cookies);
-			return;
+		try {
+			await db
+				.update(table.user)
+				.set({ active: active as boolean })
+				.where(eq(table.user.id, id as string));
+		} catch (error) {
+			setFlash({ type: 'error', message: error }, event.cookies);
 		}
 
-		await db
-			.update(table.user)
-			.set({ username: username as string })
-			.where(eq(table.user.id, id as string));
-
-		setFlash({ type: 'success', message: `User ${username} updated.` }, event.cookies);
+		setFlash({ type: 'success', message: `User updated.` }, event.cookies);
 	},
-	delete: async (event) => {
-		const formData = await event.request.formData();
-		const id = formData.get('id');
+	role: async (event) => {
+		const roleForm = await superValidate(event.request, valibot(roleUserSchema));
+		const { id, role } = roleForm.data;
 
-		await db.delete(table.user).where(eq(table.user.id, id as string));
+		try {
+			await db
+				.update(table.user)
+				.set({ role: role as (typeof table.user.$inferInsert)['role'] })
+				.where(eq(table.user.id, id as string));
+		} catch (error) {
+			setFlash({ type: 'error', message: error }, event.cookies);
+		}
 
-		return { success: true };
+		setFlash({ type: 'success', message: `User updated.` }, event.cookies);
 	}
 };

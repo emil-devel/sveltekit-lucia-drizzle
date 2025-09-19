@@ -4,23 +4,28 @@
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { superForm } from 'sveltekit-superforms';
 	import { ArrowRight, Lock, LogIn, UserRound } from '@lucide/svelte';
-	import { scale } from 'svelte/transition';
+	import { fly, slide } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 
 	let { data }: PageProps = $props();
 
-	const { enhance, errors, form, message } = superForm(data.form, {
+	const { enhance, errors, form } = superForm(data.form, {
 		validators: valibot(loginSchema)
 	});
+
+	const formErrors = $derived(
+		([$errors.username ?? [], $errors.password ?? []] as string[][]).flat()
+	);
 </script>
 
 <svelte:head>
-	<title>Register</title>
+	<title>LogIn</title>
 </svelte:head>
 
 <section class="mx-auto max-w-xs">
-	<h1 class="flex items-center justify-end gap-2">
-		<LogIn size="16" />
-		<span>Register</span>
+	<h1 class="flex items-center justify-end gap-2 h4">
+		<LogIn />
+		<span>LogIn</span>
 	</h1>
 	<form class="space-y-4 py-4" method="post" use:enhance>
 		<fieldset class="space-y-2">
@@ -33,6 +38,7 @@
 					class="input text-sm"
 					type="text"
 					name="username"
+					aria-invalid={$errors.username ? true : undefined}
 					placeholder="username"
 					spellcheck="false"
 					required
@@ -47,37 +53,32 @@
 					class="input text-sm"
 					type="password"
 					name="password"
+					aria-invalid={$errors.password ? true : undefined}
 					placeholder="password"
 					required
 				/>
 			</label>
 		</fieldset>
-
-		<button class="btn w-full preset-filled-primary-300-700" type="submit">
-			<span>Login</span>
-		</button>
+		<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm">
+			{#each formErrors as message, i (i)}
+				<p class="card preset-filled-error-300-700 p-2" transition:slide animate:flip>
+					{message}
+				</p>
+			{/each}
+		</div>
+		{#if formErrors.length === 0}
+			<div transition:fly={{ y: 200 }}>
+				<button class="btn w-full preset-filled-primary-300-700" type="submit">
+					<span>Login</span>
+				</button>
+				<p
+					class="my-2 flex items-center justify-center gap-1 border-t-[.1rem] border-t-primary-200-800 py-1 text-xs"
+				>
+					<span>Haven't Account?</span>
+					<ArrowRight size="12" />
+					<a href="/register" class="anchor">register</a>
+				</p>
+			</div>
+		{/if}
 	</form>
-	<p
-		class="my-2 flex items-center justify-center gap-1 border-t-[.1rem] border-t-primary-200-800 py-1 text-xs"
-	>
-		<span>Haven't Account?</span>
-		<ArrowRight size="12" />
-		<a href="/register" class="anchor">register</a>
-	</p>
-	<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm">
-		{#if $errors.username}
-			<p class="card preset-outlined-error-300-700 p-2" transition:scale>
-				{$errors.username}
-			</p>
-		{/if}
-		{#if $errors.password}
-			<p class="card preset-outlined-error-300-700 p-2" transition:scale>
-				{$errors.password}
-			</p>
-		{/if}
-
-		{#if $message}
-			<p class="card preset-outlined-error-300-700 p-2" transition:scale>{$message}</p>
-		{/if}
-	</div>
 </section>

@@ -4,16 +4,16 @@
 	import { registerSchema } from '$lib/valibot';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fly, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 
 	let { data }: { data: PageServerData } = $props();
 
-	const { enhance, errors, form, message } = superForm(data.form, {
+	const { enhance, errors, form } = superForm(data.form, {
 		validators: valibot(registerSchema)
 	});
 
-	const errorStrings = $derived(
+	const formErrors = $derived(
 		(
 			[
 				$errors.username ?? [],
@@ -24,7 +24,6 @@
 			] as string[][]
 		).flat()
 	);
-	$inspect(errorStrings, 'errorStrings');
 </script>
 
 <svelte:head>
@@ -32,8 +31,8 @@
 </svelte:head>
 
 <section class="mx-auto max-w-xs">
-	<h1 class="flex items-center justify-end gap-2">
-		<LogIn size="16" />
+	<h1 class="flex items-center justify-end gap-2 h4">
+		<LogIn />
 		<span>Register</span>
 	</h1>
 	<form class="space-y-4 py-4" method="post" use:enhance>
@@ -47,6 +46,7 @@
 					class="input text-sm"
 					type="text"
 					name="username"
+					aria-invalid={$errors.username ? 'true' : undefined}
 					placeholder="username"
 					spellcheck="false"
 					required
@@ -61,6 +61,7 @@
 					class="input text-sm"
 					type="email"
 					name="email"
+					aria-invalid={$errors.email ? 'true' : undefined}
 					placeholder="email"
 					spellcheck="false"
 					required
@@ -75,16 +76,13 @@
 					class="input text-sm"
 					type="password"
 					name="password"
+					aria-invalid={$errors.password ? 'true' : undefined}
 					placeholder="password"
 					required
 				/>
 			</label>
 			<label class="input-group grid-cols-[auto_1fr_auto]">
-				<div
-					class="ig-cell preset-tonal"
-					class:text-error-500={$errors.passwordConfirm &&
-						$errors._errors?.[0] === 'Passwords dont match'}
-				>
+				<div class="ig-cell preset-tonal" class:text-error-500={$errors._errors?.[0]}>
 					<LockOpen size="16" />
 				</div>
 				<input
@@ -92,27 +90,32 @@
 					class="input text-sm"
 					type="password"
 					name="passwordConfirm"
+					aria-invalid={$errors.passwordConfirm ? 'true' : undefined}
 					placeholder="password confirm"
 					required
 				/>
 			</label>
 		</fieldset>
 		<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm">
-			{#each errorStrings as err, i (i)}
-				<p class="card preset-filled-error-300-700 p-2" transition:fade animate:flip>
-					{err}
+			{#each formErrors as message, i (i)}
+				<p class="card preset-filled-error-300-700 p-2" transition:slide animate:flip>
+					{message}
 				</p>
 			{/each}
 		</div>
-		<button class="btn w-full preset-filled-primary-300-700" type="submit">
-			<span>Register</span>
-		</button>
+		{#if formErrors.length === 0}
+			<div transition:fly={{ y: 200 }}>
+				<button class="btn w-full preset-filled-primary-300-700" type="submit">
+					<span>Register</span>
+				</button>
+				<p
+					class="my-2 flex items-center justify-center gap-1 border-t-[.1rem] border-t-primary-200-800 py-1 text-xs"
+				>
+					<span>Have Account?</span>
+					<ArrowRight size="12" />
+					<a href="/login" class="anchor">login</a>
+				</p>
+			</div>
+		{/if}
 	</form>
-	<p
-		class="my-2 flex items-center justify-center gap-1 border-t-[.1rem] border-t-primary-200-800 py-1 text-xs"
-	>
-		<span>Have Account?</span>
-		<ArrowRight size="12" />
-		<a href="/login" class="anchor">login</a>
-	</p>
 </section>

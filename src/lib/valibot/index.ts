@@ -1,4 +1,15 @@
-import { object, string, pipe, minLength, regex, toLowerCase, trim, email, check } from 'valibot';
+import {
+	object,
+	string,
+	pipe,
+	minLength,
+	regex,
+	toLowerCase,
+	trim,
+	email,
+	check,
+	boolean
+} from 'valibot';
 
 export const loginSchema = object({
 	username: pipe(string(), trim(), toLowerCase()),
@@ -22,11 +33,12 @@ export const registerSchema = pipe(
 	check((c) => c.passwordConfirm === c.password, 'Passwords dont match')
 );
 
-export const updateUserSchema = object({
+export const activeUserSchema = object({
 	id: string(),
-	username: pipe(string(), minLength(2), regex(/^[a-zA-Z0-9_]+$/), trim(), toLowerCase())
+	active: boolean()
 });
 
-export const deleteUserSchema = object({
-	id: string()
+export const roleUserSchema = object({
+	id: string(),
+	role: string()
 });
