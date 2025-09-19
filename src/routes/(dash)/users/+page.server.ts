@@ -3,31 +3,59 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect, setFlash } from 'sveltekit-flash-message/server';
-import { deleteUserSchema, updateUserSchema } from '$lib/valibot';
+import { updateUserSchema } from '$lib/valibot';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { superValidate } from 'sveltekit-superforms';
+import { desc } from 'drizzle-orm';
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
 
 	const getUsers = async () => {
-		const result = await db.query.user.findMany();
-		return result;
+		const usersRaw = await db
+			.select({
+				id: table.user.id,
+				active: table.user.active,
+				role: table.user.role,
+				username: table.user.username,
+				email: table.user.email,
+				updatedAt: table.user.updatedAt,
+				createdAt: table.user.createdAt,
+				avatar: table.profile.avatar,
+				lastName: table.profile.lastName
+			})
+			.from(table.user)
+			.leftJoin(table.profile, eq(table.user.id, table.profile.userId))
+			.orderBy(desc(table.user.updatedAt));
+		const users = usersRaw.map((u) => ({
+			...u,
+			updatedAt: u.updatedAt.toLocaleDateString(),
+			createdAt: u.createdAt.toLocaleDateString()
+		}));
+		return users;
 	};
-	const updateForm = await superValidate(event, valibot(updateUserSchema));
-	const deleteForm = await superValidate(event, valibot(deleteUserSchema));
+	const form = await superValidate(event, valibot(updateUserSchema));
 
 	return {
 		users: await getUsers(),
-		updateForm,
-		deleteForm
+		form
 	};
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
 	update: async (event) => {
-		const updateForm = await superValidate(event.request, valibot(updateUserSchema));
-		const { id, username } = updateForm.data;
+		const form = await superValidate(event.request, valibot(updateUserSchema));
+		const { id, username } = form.data;
+
+		const user = await db
+			.select()
+			.from(table.user)
+			.where(eq(table.user.username, username as string));
+
+		if (user.at(0)) {
+			setFlash({ type: 'warning', message: `User ${username} already exists!` }, event.cookies);
+			return;
+		}
 
 		await db
 			.update(table.user)
@@ -37,8 +65,8 @@ export const actions: Actions = {
 		setFlash({ type: 'success', message: `User ${username} updated.` }, event.cookies);
 	},
 	delete: async (event) => {
-		const deleteForm = await superValidate(event.request, valibot(deleteUserSchema));
-		const { id } = deleteForm.data;
+		const formData = await event.request.formData();
+		const id = formData.get('id');
 
 		await db.delete(table.user).where(eq(table.user.id, id as string));
 

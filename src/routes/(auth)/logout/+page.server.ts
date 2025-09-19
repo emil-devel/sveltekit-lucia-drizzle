@@ -1,6 +1,7 @@
-import * as auth from '$lib/server/auth';
-import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { fail } from '@sveltejs/kit';
+import { redirect } from 'sveltekit-flash-message/server';
+import * as auth from '$lib/server/auth';
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.authUser) {
@@ -17,6 +18,11 @@ export const actions: Actions = {
 		await auth.invalidateSession(event.locals.session.id);
 		auth.deleteSessionTokenCookie(event);
 
-		return redirect(302, '/login');
+		redirect(
+			302,
+			'/',
+			{ type: 'info', message: 'You have successfully logged out!' },
+			event.cookies
+		);
 	}
 };

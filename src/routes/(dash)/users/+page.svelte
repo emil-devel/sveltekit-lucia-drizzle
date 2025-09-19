@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
+	import { enhance } from '$app/forms';
 
 	let { data }: PageProps = $props();
-	let { users }: any = $state(data);
+	let { users }: any = $state([]);
 	$effect(() => {
 		users = data.users;
 	});
@@ -23,7 +23,16 @@
 				<fieldset>
 					<input class="input" type="hidden" name="id" value={user.id} />
 				</fieldset>
-				<button class="btn preset-outlined-error-300-700 btn-sm"> Delete </button>
+				<div class="flex items-center gap-2">
+					<button class="btn preset-outlined-error-300-700 btn-sm"> Delete </button>
+					<span class="text-sm text-gray-500">
+						{#if user.updatedAt !== user.createdAt}
+							Updated: {user.updatedAt},
+						{/if}
+						Created: {user.createdAt}
+					</span>
+					<img src={user.avatar} alt="{user.username}'s avatar" class="h-8 w-8" />
+				</div>
 			</form>
 		</li>
 	{/each}

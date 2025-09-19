@@ -1,6 +1,6 @@
-import { redirect } from 'sveltekit-flash-message/server';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, setError, superValidate } from 'sveltekit-superforms';
+import { redirect } from 'sveltekit-flash-message/server';
 import { loginSchema } from '$lib/valibot';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { db } from '$lib/server/db';
@@ -50,6 +50,6 @@ export const actions: Actions = {
 		const session = await auth.createSession(sessionToken, user.id);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		redirect(302, '/', { type: 'success', message: 'Du bist jetzt eingeloggt.' }, event.cookies);
+		redirect(302, '/', { type: 'info', message: 'You successfully logged in.' }, event.cookies);
 	}
 };

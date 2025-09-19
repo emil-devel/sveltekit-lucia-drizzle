@@ -4,13 +4,27 @@
 	import { registerSchema } from '$lib/valibot';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
-	import { scale } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 
 	let { data }: { data: PageServerData } = $props();
 
 	const { enhance, errors, form, message } = superForm(data.form, {
 		validators: valibot(registerSchema)
 	});
+
+	const errorStrings = $derived(
+		(
+			[
+				$errors.username ?? [],
+				$errors.email ?? [],
+				$errors.password ?? [],
+				$errors.passwordConfirm ?? [],
+				$errors._errors ?? []
+			] as string[][]
+		).flat()
+	);
+	$inspect(errorStrings, 'errorStrings');
 </script>
 
 <svelte:head>
@@ -83,7 +97,13 @@
 				/>
 			</label>
 		</fieldset>
-
+		<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm">
+			{#each errorStrings as err, i (i)}
+				<p class="card preset-filled-error-300-700 p-2" transition:fade animate:flip>
+					{err}
+				</p>
+			{/each}
+		</div>
 		<button class="btn w-full preset-filled-primary-300-700" type="submit">
 			<span>Register</span>
 		</button>
@@ -95,26 +115,4 @@
 		<ArrowRight size="12" />
 		<a href="/login" class="anchor">login</a>
 	</p>
-	<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm">
-		{#if $errors.username}<p class="card preset-outlined-error-300-700 p-2" transition:scale>
-				{$errors.username}
-			</p>{/if}
-		{#if $errors.email}<p class="card preset-outlined-error-300-700 p-2" transition:scale>
-				{$errors.email}
-			</p>{/if}
-		{#if $errors.password}<p class="card preset-outlined-error-300-700 p-2" transition:scale>
-				{$errors.password}
-			</p>{/if}
-		{#if $errors.passwordConfirm}<p class="card preset-outlined-error-300-700 p-2" transition:scale>
-				{$errors.passwordConfirm}
-			</p>{/if}
-		{#if $errors._errors}
-			{#each $errors._errors as err}
-				<p class="card preset-outlined-error-300-700 p-2" transition:scale>{err}</p>
-			{/each}
-		{/if}
-		{#if $message}
-			<p class="mt-4 rounded bg-green-200 p-2 text-sm text-green-800">{$message}</p>
-		{/if}
-	</div>
 </section>
