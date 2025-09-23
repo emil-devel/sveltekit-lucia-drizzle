@@ -31,7 +31,6 @@ export const actions: Actions = {
 		const emailExist = await db.query.user.findFirst({ where: (u) => eq(u.email, email) });
 		if (emailExist) return setError(form, 'email', 'Email already in use!');
 
-		// Create user
 		const id = generateUserId();
 		const passwordHash = await hash(password, {
 			memoryCost: 19456,
@@ -50,7 +49,6 @@ export const actions: Actions = {
 		try {
 			await db.transaction(async (tx) => {
 				await tx.insert(table.user).values(userInsert);
-				// Profile requires email (unique) and (userId, name). Start with minimal data.
 				await tx.insert(table.profile).values({ userId: id, name: username });
 			});
 		} catch (error) {
@@ -60,8 +58,11 @@ export const actions: Actions = {
 			});
 		}
 
-		// Success -> redirect to login
-		throw redirect(302, '/login');
+		redirect(
+			'/login',
+			{ type: 'success', message: 'You are now registered and can log in.' },
+			event.cookies
+		);
 	}
 };
 

@@ -8,7 +8,9 @@ import {
 	trim,
 	email,
 	check,
-	boolean
+	boolean,
+	date,
+	optional
 } from 'valibot';
 
 export const loginSchema = object({
@@ -33,12 +35,44 @@ export const registerSchema = pipe(
 	check((c) => c.passwordConfirm === c.password, 'Passwords dont match')
 );
 
-export const activeUserSchema = object({
+// Per-field schemas for user page partial updates
+export const userIdSchema = object({ id: string() });
+export const updatedAtSchema = object({ updatedAt: date() });
+export const createdAtSchema = object({ createdAt: date() });
+export const userNameSchema = object({
 	id: string(),
-	active: boolean()
+	username: pipe(string(), minLength(2), regex(/^[a-zA-Z0-9_]+$/), trim(), toLowerCase())
+});
+export const userEmailSchema = object({
+	id: string(),
+	email: pipe(string(), email(), trim(), toLowerCase())
+});
+export const activeUserSchema = object({ id: string(), active: boolean() });
+export const roleUserSchema = object({ id: string(), role: string() });
+
+export const userSchema = object({
+	id: string(),
+	active: boolean(),
+	role: string(),
+	username: string(),
+	updatedAt: date(),
+	createdAt: date()
 });
 
-export const roleUserSchema = object({
+// Per-field schemas for profile page partial updates
+export const profileAvatarSchema = object({ id: string(), avatar: optional(string()) });
+export const profileFirstNameSchema = object({ id: string(), firstName: optional(string()) });
+export const profileLastNameSchema = object({ id: string(), lastName: optional(string()) });
+export const profilePhoneSchema = object({ id: string(), phone: optional(string()) });
+export const profileBioSchema = object({ id: string(), bio: optional(string()) });
+
+export const profileSchema = object({
 	id: string(),
-	role: string()
+	name: string(),
+	userId: string(),
+	avatar: optional(string()),
+	firstName: optional(string()),
+	lastName: optional(string()),
+	phone: optional(string()),
+	bio: optional(string())
 });

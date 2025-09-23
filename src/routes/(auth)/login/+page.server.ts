@@ -32,7 +32,7 @@ export const actions: Actions = {
 			return setError(
 				form,
 				'username',
-				'Dein Account ist noch nicht frei geschaltet! Wende Dich, bitte an Deinen Administrator.'
+				'Your account has not yet been unlocked! Please contact your administrator.'
 			);
 		}
 

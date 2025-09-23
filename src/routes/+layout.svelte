@@ -9,29 +9,28 @@
 	import { getFlash } from 'sveltekit-flash-message';
 	import { fade } from 'svelte/transition';
 
+	const outer = 'px-2 sm:py-4';
+	const inner = 'w-full max-w-4xl mx-auto  py-4 space-y-4';
+	const border_t = 'border-t-[.1rem] border-t-primary-200-800';
+	const border_b = 'border-b-[.1rem] border-b-primary-200-800';
+
 	let { children, data } = $props();
 
-	const flash = getFlash(page, {
-		clearAfterMs: 4000,
-		clearOnNavigate: true
-	});
+	const flash = getFlash(page);
+
+	const ms: number = 4000;
 
 	$effect(() => {
 		if (!$flash) return;
 
 		const t = String($flash.type);
-		if (t === 'error') toaster.error({ title: $flash.message, duration: 4000 });
-		if (t === 'warning') toaster.warning({ title: $flash.message, duration: 4000 });
-		if (t === 'success') toaster.success({ title: $flash.message, duration: 4000 });
-		if (t === 'info') toaster.info({ title: $flash.message, duration: 4000 });
+		if (t === 'error') toaster.error({ title: $flash.message, duration: ms });
+		if (t === 'warning') toaster.warning({ title: $flash.message, duration: ms });
+		if (t === 'success') toaster.success({ title: $flash.message, duration: ms });
+		if (t === 'info') toaster.info({ title: $flash.message, duration: ms });
 
 		$flash = undefined;
 	});
-
-	const outer = 'px-2 sm:py-4';
-	const inner = 'w-full max-w-4xl mx-auto  py-4 space-y-4';
-	const border_t = 'border-t-[.1rem] border-t-primary-200-800';
-	const border_b = 'border-b-[.1rem] border-b-primary-200-800';
 </script>
 
 <svelte:head>

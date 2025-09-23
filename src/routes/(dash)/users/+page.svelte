@@ -1,22 +1,21 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { page } from '$app/state';
-	import { superForm } from 'sveltekit-superforms';
-	import { flip } from 'svelte/animate';
-	import { fade } from 'svelte/transition';
-	import { ArrowBigRightDash, Check, UsersRound, X } from '@lucide/svelte';
-
-	const roles = ['USER', 'REDACTEUR', 'ADMIN'];
+	import { Avatar } from '@skeletonlabs/skeleton-svelte/composed';
+	import {
+		ArrowRight,
+		Check,
+		Funnel,
+		FunnelX,
+		Search,
+		SearchX,
+		UserRound,
+		UsersRound,
+		X
+	} from '@lucide/svelte';
 
 	let { data }: PageProps = $props();
-
-	const { enhance: activeEnhance } = superForm(data.activeForm, { resetForm: true });
-	const { enhance: roleEnhance } = superForm(data.roleForm, { resetForm: true });
-
-	let { users }: any = $state([]);
-	$effect(() => {
-		users = data.users;
-	});
+	const users = $derived(data.users);
+	const countUser: number = $derived(users.length);
 </script>
 
 <svelte:head>
@@ -24,67 +23,85 @@
 </svelte:head>
 
 <article class="">
-	<h2 class="flex items-center justify-end gap-2 h4">
-		<UsersRound />
-		<span>Users</span>
-	</h2>
+	<header class="flex flex-row-reverse items-center gap-4">
+		<h2 class="flex items-center justify-end gap-2 h4">
+			<UsersRound />
+			<span>Users</span>
+		</h2>
+		<label class="label flex items-center gap-1">
+			<input class="input w-fit" type="search" name="search" />
+			<Search size="20" />
+			<SearchX size="20" />
+			<Funnel size="20" />
+			<FunnelX size="20" />
+		</label>
+	</header>
 
-	<ul class="grid grid-cols-1 gap-4 py-4 md:grid-cols-2">
-		{#each users as user, i (user.id)}
-			<li
-				class="flex items-center justify-between gap-2 card preset-filled-surface-300-700 p-4"
-				out:fade
-				animate:flip
-			>
-				{#if user.avatar}
-					<img class="h-8 w-8" src={user.avatar} alt="Avatar {user.username}" />
-				{/if}
-				<h2 class="h5">{user.username}</h2>
-				{#if page.data.authUser.role === 'ADMIN' && page.data.authUser.id !== user.id}
-					<form method="post" action="?/active" use:activeEnhance>
-						<input class="input" type="hidden" name="id" bind:value={user.id} />
-						<label class="label">
-							<input
-								onchange={(e) => (e.currentTarget as HTMLInputElement).form?.requestSubmit()}
-								class="checkbox"
-								type="checkbox"
-								name="active"
-								checked={user.active}
-							/>
-						</label>
-					</form>
-					<form method="post" action="?/role" use:roleEnhance>
-						<input class="input" type="hidden" name="id" value={user.id} />
-						<label class="label">
-							<select
-								onchange={(e) => (e.currentTarget as HTMLSelectElement).form?.requestSubmit()}
-								value={user.role}
-								class="select rounded-container"
-								name="role"
+	<div class="my-2 table-wrap border-[.1em] border-surface-300-700 p-4">
+		<table class="table table-auto caption-bottom sm:table-fixed">
+			<thead>
+				<tr>
+					<th>avatar</th>
+					<th>username</th>
+					<th>role</th>
+					<th>active</th>
+					<th>registred</th>
+					<th>view</th>
+				</tr>
+			</thead>
+			<tbody class="[&>tr]:hover:preset-tonal-primary">
+				{#each users as user (user.id)}
+					<tr>
+						<td>
+							<Avatar class="h-10 w-10 text-xs">
+								<Avatar.Image src={user.avatar} />
+								<Avatar.Fallback>{user.username}</Avatar.Fallback>
+							</Avatar>
+						</td>
+						<td>
+							<span
+								class:text-success-500={user.role === 'USER'}
+								class:text-warning-500={user.role === 'REDACTEUR'}
+								class:text-error-500={user.role === 'ADMIN'}
 							>
-								<option selected>{user.role}</option>
-								{#each roles as role}
-									{#if role !== user.role}
-										<option value={role}>{role}</option>
-									{/if}
-								{/each}
-							</select>
-						</label>
-					</form>
-				{:else}
-					<p>
-						Active:
-						{#if user.active}
-							<Check class="text-success-500" />
-						{:else}
-							<X class="text-error-500" />
-						{/if}, Role: {user.role}
-					</p>
-				{/if}
-				<a href="/users/{user.username}">
-					<ArrowBigRightDash class="text-primary-500" />
-				</a>
-			</li>
-		{/each}
-	</ul>
+								{user.username}
+							</span>
+						</td>
+						<td class="lowercase">
+							<span
+								class:text-success-500={user.role === 'USER'}
+								class:text-warning-500={user.role === 'REDACTEUR'}
+								class:text-error-500={user.role === 'ADMIN'}
+							>
+								{user.role}
+							</span>
+						</td>
+						<td>
+							{#if user.active}
+								<Check class="text-success-500" />
+							{:else}
+								<X class="text-error-500" />
+							{/if}
+						</td>
+						<td><span class="code">{user.createdAt}</span></td>
+						<td>
+							<a class="badge preset-filled-primary-500" href="/users/{user.username}">
+								<UserRound size="20" />
+								<ArrowRight size="20" />
+							</a>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="4"></td>
+					<td>Total:</td>
+					<td class="text-right"
+						><span class="code">{countUser}</span> User{countUser === 1 ? '' : 's'}</td
+					>
+				</tr>
+			</tfoot>
+		</table>
+	</div>
 </article>

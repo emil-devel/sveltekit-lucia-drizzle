@@ -5,49 +5,45 @@ import { eq } from 'drizzle-orm';
 import { redirect, setFlash } from 'sveltekit-flash-message/server';
 import { activeUserSchema, roleUserSchema } from '$lib/valibot';
 import { valibot } from 'sveltekit-superforms/adapters';
-import { superValidate } from 'sveltekit-superforms';
-import { desc } from 'drizzle-orm';
+import { fail, superValidate } from 'sveltekit-superforms';
+import { asc } from 'drizzle-orm';
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
 
 	const getUsers = async () => {
-		const usersRaw = await db
+		const result = await db
 			.select({
 				id: table.user.id,
 				active: table.user.active,
 				role: table.user.role,
 				username: table.user.username,
-				email: table.user.email,
-				updatedAt: table.user.updatedAt,
 				createdAt: table.user.createdAt,
-				avatar: table.profile.avatar,
-				lastName: table.profile.lastName
+				avatar: table.profile.avatar
 			})
 			.from(table.user)
 			.leftJoin(table.profile, eq(table.user.id, table.profile.userId))
-			.orderBy(desc(table.user.updatedAt));
-		const users = usersRaw.map((u) => ({
-			...u,
-			updatedAt: u.updatedAt.toLocaleDateString(),
-			createdAt: u.createdAt.toLocaleDateString()
+			.orderBy(asc(table.user.username));
+
+		const users = result.map((result) => ({
+			...result,
+			createdAt: result.createdAt.toLocaleDateString()
 		}));
+
 		return users;
 	};
-	const activeForm = await superValidate(event, valibot(activeUserSchema));
-	const roleForm = await superValidate(event, valibot(roleUserSchema));
 
 	return {
-		users: await getUsers(),
-		activeForm,
-		roleForm
+		users: await getUsers()
 	};
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
 	active: async (event) => {
-		const updateForm = await superValidate(event.request, valibot(activeUserSchema));
-		const { id, active } = updateForm.data;
+		const activeForm = await superValidate(event.request, valibot(activeUserSchema));
+		const { id, active } = activeForm.data;
+
+		if (!activeForm.valid) return fail(400, { activeForm });
 
 		try {
 			await db
@@ -63,6 +59,8 @@ export const actions: Actions = {
 	role: async (event) => {
 		const roleForm = await superValidate(event.request, valibot(roleUserSchema));
 		const { id, role } = roleForm.data;
+
+		if (!roleForm.valid) return fail(400, { roleForm });
 
 		try {
 			await db

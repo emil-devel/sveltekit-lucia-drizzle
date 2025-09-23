@@ -96,9 +96,13 @@
 				/>
 			</label>
 		</fieldset>
-		<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm">
+		<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
 			{#each formErrors as message, i (i)}
-				<p class="card preset-filled-error-300-700 p-2" transition:slide animate:flip>
+				<p
+					class="card preset-filled-error-300-700 p-2"
+					transition:slide={{ duration: 140 }}
+					animate:flip={{ duration: 160 }}
+				>
 					{message}
 				</p>
 			{/each}
