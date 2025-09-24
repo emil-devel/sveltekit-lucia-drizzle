@@ -39,8 +39,8 @@
 
 <Toaster {toaster} />
 
-<header class="{outer} {border_b}">
-	<div class={inner}>
+<header class={outer}>
+	<div class="{inner} {border_b}">
 		<Header />
 	</div>
 </header>

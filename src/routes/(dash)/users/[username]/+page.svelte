@@ -3,10 +3,11 @@
 	import { page } from '$app/state';
 	import { canManageUser, isAdmin as isAdminUtil, isSelf as isSelfUtil } from '$lib/permissions';
 	import { superForm } from 'sveltekit-superforms';
-	import { scale, slide } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { userEmailSchema, userNameSchema } from '$lib/valibot';
+	import { scale, slide } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
+
 	import {
 		ArrowBigLeft,
 		Mail,

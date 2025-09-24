@@ -6,7 +6,7 @@
 
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 
-	import { House, LogOut, UserRound, UsersRound, X } from '@lucide/svelte';
+	import { House, LogOut, Settings, UserRound, UsersRound, X } from '@lucide/svelte';
 
 	let loggedUser: boolean = $state(false);
 	const closeAuthUser = () => (loggedUser = false);
@@ -85,19 +85,20 @@
 					</header>
 					<article>
 						<ul class="list space-y-2 pb-2 text-center text-sm">
-							<li>
-								role: <span
-									class:text-success-500={page.data.authUser.role === 'USER'}
-									class:text-warning-500={page.data.authUser.role === 'REDACTEUR'}
-									class:text-error-500={page.data.authUser.role === 'ADMIN'}
-									>{page.data.authUser.role.toLowerCase()}</span
-								>
+							<li
+								class:text-success-500={page.data.authUser.role === 'USER'}
+								class:text-warning-500={page.data.authUser.role === 'REDACTEUR'}
+								class:text-error-500={page.data.authUser.role === 'ADMIN'}
+							>
+								<UserRound size={16} />
+								<span>{page.data.authUser.role.toLowerCase()}</span>
 							</li>
 							{#if page.url.pathname !== `/users/${page.data.authUser.username}`}
 								<li>
-									<a class="anchor lowercase" href="/users/{page.data.authUser.username}"
-										>Settings</a
-									>
+									<a class="anchor" href="/users/{page.data.authUser.username}">
+										<Settings size={16} />
+										<span>Settings</span>
+									</a>
 								</li>
 							{/if}
 						</ul>
