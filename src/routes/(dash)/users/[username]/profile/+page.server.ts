@@ -4,7 +4,7 @@ import { isAdmin, isSelf } from '$lib/permissions';
 
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, and } from 'drizzle-orm';
 
 import { fail, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
@@ -18,24 +18,9 @@ import {
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
-	// View policy: Users may view only their own profile; Admins may view any profile
 
 	const getProfileForms = async (username: string) => {
-		// Resolve user by username
-		const users = await db
-			.select({ id: table.user.id, username: table.user.username })
-			.from(table.user)
-			.where(eq(table.user.username, username))
-			.limit(1);
-		const userRow = users[0];
-		if (!userRow) throw redirect(302, '/users');
-
-		const viewer = event.locals.authUser;
-		if (!viewer || !(isAdmin(viewer) || isSelf(viewer.id, userRow.id))) {
-			throw redirect(302, '/users');
-		}
-
-		// Fetch profile by userId (deterministic row choice)
+		// Fetch profile by name = username
 		const profiles = await db
 			.select({
 				id: table.profile.id,
@@ -48,11 +33,16 @@ export const load = (async (event) => {
 				bio: table.profile.bio
 			})
 			.from(table.profile)
-			.where(eq(table.profile.userId, userRow.id))
+			.where(eq(table.profile.name, username))
 			.orderBy(asc(table.profile.id))
 			.limit(1);
 		const row = profiles[0];
 		if (!row) throw redirect(302, '/users');
+		// View policy: Users may view only their own profile; Admins may view any profile
+		const viewer = event.locals.authUser;
+		if (!viewer || !(isAdmin(viewer) || isSelf(viewer.id, row.userId))) {
+			throw redirect(302, '/users');
+		}
 
 		const profile = {
 			...row,
@@ -89,19 +79,18 @@ export const actions: Actions = {
 		if (!viewer) throw redirect(302, '/login');
 
 		const { id, firstName } = firstNameForm.data;
-		const targets = await db
-			.select({ userId: table.profile.userId })
-			.from(table.profile)
-			.where(eq(table.profile.id, id))
-			.limit(1);
-		const targetUserId = targets[0]?.userId;
-		// Edit policy: Only self can edit (admins cannot edit others)
-		if (!isSelf(viewer.id, targetUserId)) return fail(403, { firstNameForm });
 
-		await db
-			.update(table.profile)
-			.set({ firstName: firstName ?? null })
-			.where(eq(table.profile.id, id));
+		try {
+			await db
+				.update(table.profile)
+				.set({ firstName: firstName ?? null })
+				.where(and(eq(table.profile.id, id), eq(table.profile.userId, viewer.id)))
+				.returning({ id: table.profile.id });
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return setFlash({ type: 'error', message }, event.cookies);
+		}
+
 		setFlash({ type: 'success', message: 'First name updated.' }, event.cookies);
 	},
 	lastName: async (event) => {
@@ -112,18 +101,18 @@ export const actions: Actions = {
 		if (!viewer) throw redirect(302, '/login');
 
 		const { id, lastName } = lastNameForm.data;
-		const targets = await db
-			.select({ userId: table.profile.userId })
-			.from(table.profile)
-			.where(eq(table.profile.id, id))
-			.limit(1);
-		const targetUserId = targets[0]?.userId;
-		if (!isSelf(viewer.id, targetUserId)) return fail(403, { lastNameForm });
 
-		await db
-			.update(table.profile)
-			.set({ lastName: lastName ?? null })
-			.where(eq(table.profile.id, id));
+		try {
+			await db
+				.update(table.profile)
+				.set({ lastName: lastName ?? null })
+				.where(and(eq(table.profile.id, id), eq(table.profile.userId, viewer.id)))
+				.returning({ id: table.profile.id });
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return setFlash({ type: 'error', message }, event.cookies);
+		}
+
 		setFlash({ type: 'success', message: 'Last name updated.' }, event.cookies);
 	},
 	phone: async (event) => {
@@ -134,18 +123,18 @@ export const actions: Actions = {
 		if (!viewer) throw redirect(302, '/login');
 
 		const { id, phone } = phoneForm.data;
-		const targets = await db
-			.select({ userId: table.profile.userId })
-			.from(table.profile)
-			.where(eq(table.profile.id, id))
-			.limit(1);
-		const targetUserId = targets[0]?.userId;
-		if (!isSelf(viewer.id, targetUserId)) return fail(403, { phoneForm });
 
-		await db
-			.update(table.profile)
-			.set({ phone: phone ?? null })
-			.where(eq(table.profile.id, id));
+		try {
+			await db
+				.update(table.profile)
+				.set({ phone: phone ?? null })
+				.where(and(eq(table.profile.id, id), eq(table.profile.userId, viewer.id)))
+				.returning({ id: table.profile.id });
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return setFlash({ type: 'error', message }, event.cookies);
+		}
+
 		setFlash({ type: 'success', message: 'Phone updated.' }, event.cookies);
 	},
 	bio: async (event) => {
@@ -156,18 +145,18 @@ export const actions: Actions = {
 		if (!viewer) throw redirect(302, '/login');
 
 		const { id, bio } = bioForm.data;
-		const targets = await db
-			.select({ userId: table.profile.userId })
-			.from(table.profile)
-			.where(eq(table.profile.id, id))
-			.limit(1);
-		const targetUserId = targets[0]?.userId;
-		if (!isSelf(viewer.id, targetUserId)) return fail(403, { bioForm });
 
-		await db
-			.update(table.profile)
-			.set({ bio: bio ?? null })
-			.where(eq(table.profile.id, id));
+		try {
+			await db
+				.update(table.profile)
+				.set({ bio: bio ?? null })
+				.where(and(eq(table.profile.id, id), eq(table.profile.userId, viewer.id)))
+				.returning({ id: table.profile.id });
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return setFlash({ type: 'error', message }, event.cookies);
+		}
+
 		setFlash({ type: 'success', message: 'Bio updated.' }, event.cookies);
 	}
 };
