@@ -110,7 +110,7 @@
 							use:enhance
 						>
 							<button class="btn preset-filled-secondary-200-800 btn-sm">
-								abmelden <LogOut size="16" />
+								logout <LogOut size="16" />
 							</button>
 						</form>
 					</article>

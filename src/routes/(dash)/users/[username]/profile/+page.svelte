@@ -2,16 +2,16 @@
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
 	import { superForm } from 'sveltekit-superforms';
+	import { isSelf as isSelfUtil } from '$lib/permissions';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import {
 		profileSchema,
-		profileAvatarSchema,
 		profileFirstNameSchema,
 		profileLastNameSchema,
 		profilePhoneSchema,
 		profileBioSchema
 	} from '$lib/valibot';
-	import { ArrowBigLeft, Phone, UserRound, UserRoundPen } from '@lucide/svelte';
+	import { ArrowBigLeft, Phone, UserRound, UserRoundPen, X } from '@lucide/svelte';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte/composed';
 	import { slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
@@ -21,9 +21,6 @@
 	let { data }: PageProps = $props();
 
 	const { form } = superForm(data.form.profileForm, { validators: valibot(profileSchema) });
-	const { enhance: avatarEnhance, form: avatarForm } = superForm(data.form.avatarForm, {
-		validators: valibot(profileAvatarSchema)
-	});
 	const {
 		enhance: firstNameEnhance,
 		form: firstNameForm,
@@ -50,20 +47,33 @@
 	const errorsFirstName = $derived(($firstNameErrors.firstName ?? []) as string[]);
 	const errorsLastName = $derived(($lastNameErrors.lastName ?? []) as string[]);
 	const errorsPhone = $derived(($phoneErrors.phone ?? []) as string[]);
-	const errorsBio = $derived(($bioErrors.bio ?? []) as string[]);
 
 	// Dismissible error messages per field (same pattern as Username page)
 	let dismissedFirstName = $state<Set<string>>(new Set());
 	let dismissedLastName = $state<Set<string>>(new Set());
 	let dismissedPhone = $state<Set<string>>(new Set());
-	let dismissedBio = $state<Set<string>>(new Set());
 
 	const visibleErrorsFirstName = $derived(
 		errorsFirstName.filter((m) => !dismissedFirstName.has(m))
 	);
 	const visibleErrorsLastName = $derived(errorsLastName.filter((m) => !dismissedLastName.has(m)));
 	const visibleErrorsPhone = $derived(errorsPhone.filter((m) => !dismissedPhone.has(m)));
-	const visibleErrorsBio = $derived(errorsBio.filter((m) => !dismissedBio.has(m)));
+
+	// Show errors only after user interaction (typed) or a submit attempt
+	let dirtyFirstName = $state(false);
+	let attemptedFirstName = $state(false);
+	let dirtyLastName = $state(false);
+	let attemptedLastName = $state(false);
+	let dirtyPhone = $state(false);
+	let attemptedPhone = $state(false);
+
+	const showFirstNameErrors = $derived(
+		(dirtyFirstName || attemptedFirstName) && visibleErrorsFirstName.length > 0
+	);
+	const showLastNameErrors = $derived(
+		(dirtyLastName || attemptedLastName) && visibleErrorsLastName.length > 0
+	);
+	const showPhoneErrors = $derived((dirtyPhone || attemptedPhone) && visibleErrorsPhone.length > 0);
 
 	function dismissFirstNameError(message: string) {
 		const next = new Set(dismissedFirstName);
@@ -80,11 +90,6 @@
 		next.add(message);
 		dismissedPhone = next;
 	}
-	function dismissBioError(message: string) {
-		const next = new Set(dismissedBio);
-		next.add(message);
-		dismissedBio = next;
-	}
 
 	// Reset dismissals when validation results change
 	$effect(() => {
@@ -99,10 +104,9 @@
 		void errorsPhone;
 		dismissedPhone = new Set();
 	});
-	$effect(() => {
-		void errorsBio;
-		dismissedBio = new Set();
-	});
+
+	// Use helper-based permission check like on the username page
+	const isSelf = $derived(isSelfUtil(page.data.authUser.id, $form.userId));
 </script>
 
 <svelte:head>
@@ -120,7 +124,7 @@
 			<h1 class="h4">{$form.name}</h1>
 			<div class="mt-6 -mb-16 h-24 w-24 rounded-full border-6 border-primary-300-700">
 				<Avatar class="h-full w-full bg-surface-100-900">
-					<Avatar.Image src={$avatarForm.avatar} />
+					<Avatar.Image src={$form.avatar} />
 					<Avatar.Fallback
 						>{$firstNameForm.firstName?.at(0)}{$lastNameForm.lastName?.at(0)}</Avatar.Fallback
 					>
@@ -133,8 +137,13 @@
 					<UserRoundPen />
 					<span>Profile</span>
 				</h2>
-				{#if page.data.authUser.username === $form.name}
-					<form method="post" action="?/firstName" use:firstNameEnhance>
+				{#if isSelf}
+					<form
+						method="post"
+						action="?/firstName"
+						use:firstNameEnhance
+						onsubmit={() => (attemptedFirstName = true)}
+					>
 						<input class="input" type="hidden" name="id" value={$firstNameForm.id} />
 						<label class="label label-text" for="firstName">First Name</label>
 						<div class="input-group grid-cols-[auto_1fr_auto]">
@@ -146,34 +155,43 @@
 								type="text"
 								name="firstName"
 								bind:value={$firstNameForm.firstName}
+								oninput={() => (dirtyFirstName = true)}
 								spellcheck="false"
 							/>
 							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
 						</div>
 					</form>
-					<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-						{#each visibleErrorsFirstName as message, i (i)}
-							<div
-								class="card preset-filled-error-300-700 p-2"
-								transition:slide={{ duration: 140 }}
-								animate:flip={{ duration: 160 }}
-							>
-								<div class="text-right">
-									<button
-										type="button"
-										class="anchor"
-										onclick={() => dismissFirstNameError(message)}
-									>
-										Close message
-									</button>
+
+					{#if showFirstNameErrors}
+						<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
+							{#each visibleErrorsFirstName as message, i (i)}
+								<div
+									class="card preset-filled-error-300-700 p-2"
+									transition:slide={{ duration: 140 }}
+									animate:flip={{ duration: 160 }}
+								>
+									<div class="text-right">
+										<button
+											type="button"
+											class="anchor"
+											onclick={() => dismissFirstNameError(message)}
+										>
+											<X class="text-white" />
+										</button>
+									</div>
+									<div>
+										<p>{message}</p>
+									</div>
 								</div>
-								<div>
-									<p>{message}</p>
-								</div>
-							</div>
-						{/each}
-					</div>
-					<form method="post" action="?/lastName" use:lastNameEnhance>
+							{/each}
+						</div>
+					{/if}
+					<form
+						method="post"
+						action="?/lastName"
+						use:lastNameEnhance
+						onsubmit={() => (attemptedLastName = true)}
+					>
 						<input class="input" type="hidden" name="id" value={$lastNameForm.id} />
 						<label class="label label-text" for="lastName">Last Name</label>
 						<div class="input-group grid-cols-[auto_1fr_auto]">
@@ -185,34 +203,42 @@
 								type="text"
 								name="lastName"
 								bind:value={$lastNameForm.lastName}
+								oninput={() => (dirtyLastName = true)}
 								spellcheck="false"
 							/>
 							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
 						</div>
 					</form>
-					<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-						{#each visibleErrorsLastName as message, i (i)}
-							<div
-								class="card preset-filled-error-300-700 p-2"
-								transition:slide={{ duration: 140 }}
-								animate:flip={{ duration: 160 }}
-							>
-								<div class="text-right">
-									<button
-										type="button"
-										class="anchor"
-										onclick={() => dismissLastNameError(message)}
-									>
-										Close message
-									</button>
+					{#if showLastNameErrors}
+						<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
+							{#each visibleErrorsLastName as message, i (i)}
+								<div
+									class="card preset-filled-error-300-700 p-2"
+									transition:slide={{ duration: 140 }}
+									animate:flip={{ duration: 160 }}
+								>
+									<div class="text-right">
+										<button
+											type="button"
+											class="anchor"
+											onclick={() => dismissLastNameError(message)}
+										>
+											<X class="text-white" />
+										</button>
+									</div>
+									<div>
+										<p>{message}</p>
+									</div>
 								</div>
-								<div>
-									<p>{message}</p>
-								</div>
-							</div>
-						{/each}
-					</div>
-					<form method="post" action="?/phone" use:phoneEnhance>
+							{/each}
+						</div>
+					{/if}
+					<form
+						method="post"
+						action="?/phone"
+						use:phoneEnhance
+						onsubmit={() => (attemptedPhone = true)}
+					>
 						<input class="input" type="hidden" name="id" value={$phoneForm.id} />
 						<label class="label label-text" for="phone">Phone</label>
 						<div class="input-group grid-cols-[auto_1fr_auto]">
@@ -224,29 +250,32 @@
 								type="tel"
 								name="phone"
 								bind:value={$phoneForm.phone}
+								oninput={() => (dirtyPhone = true)}
 								spellcheck="false"
 							/>
 							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
 						</div>
 					</form>
-					<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-						{#each visibleErrorsPhone as message, i (i)}
-							<div
-								class="card preset-filled-error-300-700 p-2"
-								transition:slide={{ duration: 140 }}
-								animate:flip={{ duration: 160 }}
-							>
-								<div class="text-right">
-									<button type="button" class="anchor" onclick={() => dismissPhoneError(message)}>
-										Close message
-									</button>
+					{#if showPhoneErrors}
+						<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
+							{#each visibleErrorsPhone as message, i (i)}
+								<div
+									class="card preset-filled-error-300-700 p-2"
+									transition:slide={{ duration: 140 }}
+									animate:flip={{ duration: 160 }}
+								>
+									<div class="text-right">
+										<button type="button" class="anchor" onclick={() => dismissPhoneError(message)}>
+											<X class="text-white" />
+										</button>
+									</div>
+									<div>
+										<p>{message}</p>
+									</div>
 								</div>
-								<div>
-									<p>{message}</p>
-								</div>
-							</div>
-						{/each}
-					</div>
+							{/each}
+						</div>
+					{/if}
 				{:else}
 					<div>
 						<p class="label-text">First Name</p>
@@ -291,24 +320,6 @@
 							<button class="btn preset-tonal btn-sm" type="submit"> Submit </button>
 						</div>
 					</form>
-					<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-						{#each visibleErrorsBio as message, i (i)}
-							<div
-								class="card preset-filled-error-300-700 p-2"
-								transition:slide={{ duration: 140 }}
-								animate:flip={{ duration: 160 }}
-							>
-								<div class="text-right">
-									<button type="button" class="anchor" onclick={() => dismissBioError(message)}>
-										Close message
-									</button>
-								</div>
-								<div>
-									<p>{message}</p>
-								</div>
-							</div>
-						{/each}
-					</div>
 				</div>
 			</div>
 		</article>

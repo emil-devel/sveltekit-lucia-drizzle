@@ -10,8 +10,10 @@ import {
 	check,
 	boolean,
 	date,
-	optional
+	optional,
+	enum_
 } from 'valibot';
+// Keep role values in sync with $lib/permissions/ROLES and Prisma enum
 
 export const loginSchema = object({
 	username: pipe(string(), trim(), toLowerCase()),
@@ -20,7 +22,7 @@ export const loginSchema = object({
 
 export const registerSchema = pipe(
 	object({
-		username: pipe(string(), minLength(2), regex(/^[a-zA-Z0-9_]+$/), trim(), toLowerCase()),
+		username: pipe(string(), minLength(2), trim(), regex(/^S*[a-z0-9_]+$/), toLowerCase()),
 		email: pipe(string(), email(), trim(), toLowerCase()),
 		password: pipe(
 			string(),
@@ -41,29 +43,38 @@ export const updatedAtSchema = object({ updatedAt: date() });
 export const createdAtSchema = object({ createdAt: date() });
 export const userNameSchema = object({
 	id: string(),
-	username: pipe(string(), minLength(2), regex(/^[a-zA-Z0-9_]+$/), trim(), toLowerCase())
+	username: pipe(string(), minLength(2), trim(), regex(/^S*[a-z0-9_]+$/), toLowerCase())
 });
 export const userEmailSchema = object({
 	id: string(),
 	email: pipe(string(), email(), trim(), toLowerCase())
 });
 export const activeUserSchema = object({ id: string(), active: boolean() });
-export const roleUserSchema = object({ id: string(), role: string() });
 
-export const userSchema = object({
-	id: string(),
-	active: boolean(),
-	role: string(),
-	username: string(),
-	updatedAt: date(),
-	createdAt: date()
-});
+// Build a Valibot-compatible enum object from the shared ROLES list
+export const ROLE_ENUM = {
+	USER: 'USER',
+	REDACTEUR: 'REDACTEUR',
+	ADMIN: 'ADMIN'
+} as const;
+
+export const roleUserSchema = object({ id: string(), role: enum_(ROLE_ENUM) });
 
 // Per-field schemas for profile page partial updates
-export const profileAvatarSchema = object({ id: string(), avatar: optional(string()) });
-export const profileFirstNameSchema = object({ id: string(), firstName: optional(string()) });
-export const profileLastNameSchema = object({ id: string(), lastName: optional(string()) });
-export const profilePhoneSchema = object({ id: string(), phone: optional(string()) });
+export const profileFirstNameSchema = object({
+	id: string(),
+	firstName: optional(
+		pipe(string(), trim(), regex(/^[A-Z][a-zA-Z' -]+( [A-Z][a-zA-Z' -]+)?( [A-Z][a-zA-Z' -]+)?$/))
+	)
+});
+export const profileLastNameSchema = object({
+	id: string(),
+	lastName: optional(pipe(string(), trim(), regex(/^[A-Za-z][A-Za-z\s]{0,20}[A-Za-z]$/)))
+});
+export const profilePhoneSchema = object({
+	id: string(),
+	phone: optional(pipe(string(), trim(), regex(/^\+(?:[0-9()./-]\s?){6,15}[0-9]$/)))
+});
 export const profileBioSchema = object({ id: string(), bio: optional(string()) });
 
 export const profileSchema = object({

@@ -6,9 +6,9 @@ import { and, eq, not } from 'drizzle-orm';
 
 import { redirect, setFlash } from 'sveltekit-flash-message/server';
 import { fail, setError, superValidate } from 'sveltekit-superforms';
-import { valibot } from 'sveltekit-superforms/adapters';
-
 import { isAdmin, isSelf } from '$lib/permissions';
+
+import { valibot } from 'sveltekit-superforms/adapters';
 import {
 	activeUserSchema,
 	roleUserSchema,
@@ -166,7 +166,7 @@ export const actions: Actions = {
 		try {
 			await db
 				.update(table.user)
-				.set({ role: role as (typeof table.user.$inferInsert)['role'] })
+				.set({ role: role })
 				.where(eq(table.user.id, id as string));
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
