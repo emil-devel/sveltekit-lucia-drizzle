@@ -16,7 +16,6 @@
 		UserRoundPen,
 		UserRoundX
 	} from '@lucide/svelte';
-
 	const iconSize: number = 16;
 
 	import { ROLES } from '$lib/permissions';

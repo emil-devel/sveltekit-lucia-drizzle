@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { Switch } from '@skeletonlabs/skeleton-svelte';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte/composed';
 	import {
 		ArrowRight,
@@ -77,11 +78,10 @@
 							</span>
 						</td>
 						<td>
-							{#if user.active}
-								<Check class="text-success-500" />
-							{:else}
-								<X class="text-error-500" />
-							{/if}
+							<Switch checked={user.active}>
+								{#snippet inactiveChild()}<X size="14" />{/snippet}
+								{#snippet activeChild()}<Check size="14" />{/snippet}
+							</Switch>
 						</td>
 						<td><span class="code">{user.createdAt}</span></td>
 						<td>
