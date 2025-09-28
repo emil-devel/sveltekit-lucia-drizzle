@@ -16,7 +16,9 @@ export const load = (async (event) => {
 				role: table.user.role,
 				username: table.user.username,
 				createdAt: table.user.createdAt,
-				avatar: table.profile.avatar
+				avatar: table.profile.avatar,
+				firstName: table.profile.firstName,
+				lastName: table.profile.lastName
 			})
 			.from(table.user)
 			.leftJoin(table.profile, eq(table.user.id, table.profile.userId))

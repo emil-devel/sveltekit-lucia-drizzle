@@ -14,54 +14,72 @@ import {
 	roleUserSchema,
 	userNameSchema,
 	userIdSchema,
-	userEmailSchema,
-	updatedAtSchema,
-	createdAtSchema
+	userEmailSchema
 } from '$lib/valibot';
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
 
 	const getUserForms = async (username: string) => {
-		const result = await db
+		// Single round-trip: user + profile via LEFT JOIN (profile expected to exist, but we guard anyway)
+		const rows = await db
 			.select({
-				id: table.user.id,
+				userId: table.user.id,
 				active: table.user.active,
 				role: table.user.role,
 				username: table.user.username,
 				email: table.user.email,
 				updatedAt: table.user.updatedAt,
-				createdAt: table.user.createdAt
+				createdAt: table.user.createdAt,
+				profileId: table.profile.id,
+				avatar: table.profile.avatar,
+				firstName: table.profile.firstName,
+				lastName: table.profile.lastName
 			})
 			.from(table.user)
+			.leftJoin(table.profile, eq(table.profile.name, table.user.username))
 			.where(eq(table.user.username, username))
 			.limit(1);
 
-		const user = result[0];
-		if (!user) throw redirect(302, '/users');
+		const row = rows[0];
+		if (!row) throw redirect(302, '/users');
+		if (!row.profileId) throw redirect(302, '/users'); // invariant: profile should exist
 
-		const {
+		const uName = row.username;
+		const uEmail = row.email;
+		const uActive = row.active;
+		const uRole = row.role;
+		const id = row.userId;
+		const { updatedAt, createdAt } = row;
+
+		const normalizedProfile = {
+			id: row.profileId,
+			avatar: row.avatar ?? '',
+			firstName: row.firstName ?? '',
+			lastName: row.lastName ?? ''
+		};
+
+		const [usernameForm, emailForm, activeForm, roleForm, deleteForm] = await Promise.all([
+			superValidate({ id, username: uName }, valibot(userNameSchema)),
+			superValidate({ id, email: uEmail }, valibot(userEmailSchema)),
+			superValidate({ id, active: uActive }, valibot(activeUserSchema)),
+			superValidate({ id, role: uRole }, valibot(roleUserSchema)),
+			superValidate({ id }, valibot(userIdSchema))
+		]);
+
+		return {
 			id,
-			username: uName,
-			email: uEmail,
-			active: uActive,
-			role: uRole,
-			updatedAt,
-			createdAt
-		} = user;
-
-		const [usernameForm, emailForm, activeForm, roleForm, deleteForm, updatedForm, createdForm] =
-			await Promise.all([
-				superValidate({ id, username: uName }, valibot(userNameSchema)),
-				superValidate({ id, email: uEmail }, valibot(userEmailSchema)),
-				superValidate({ id, active: uActive }, valibot(activeUserSchema)),
-				superValidate({ id, role: uRole }, valibot(roleUserSchema)),
-				superValidate({ id }, valibot(userIdSchema)),
-				superValidate({ updatedAt }, valibot(updatedAtSchema)),
-				superValidate({ createdAt }, valibot(createdAtSchema))
-			]);
-
-		return { usernameForm, emailForm, activeForm, roleForm, deleteForm, updatedForm, createdForm };
+			usernameForm,
+			emailForm,
+			activeForm,
+			roleForm,
+			deleteForm,
+			updatedAt: updatedAt.toLocaleDateString(),
+			createdAt: createdAt.toLocaleDateString(),
+			avatar: normalizedProfile.avatar,
+			firstName: normalizedProfile.firstName,
+			lastName: normalizedProfile.lastName
+		};
 	};
 
 	return { form: await getUserForms(event.params.username) };
