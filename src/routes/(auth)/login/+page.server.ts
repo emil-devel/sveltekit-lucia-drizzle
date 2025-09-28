@@ -26,7 +26,7 @@ export const actions: Actions = {
 
 		const user = result;
 		if (!user) {
-			return setError(form, 'username', 'User existiert nicht!');
+			return setError(form, 'username', 'User does not exist!');
 		}
 		if (!user.active) {
 			return setError(
@@ -43,12 +43,22 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 		if (!validPassword) {
-			return setError(form, 'password', 'Falsches Passwort!');
+			return setError(form, 'password', 'Wrong password!');
 		}
 
-		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, user.id);
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		try {
+			const sessionToken = auth.generateSessionToken();
+			const session = await auth.createSession(sessionToken, user.id);
+			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		} catch (error) {
+			console.error('Login error:', error);
+			// Always return the form for superforms on error
+			return fail(500, {
+				form,
+				message: 'An error has occurred while logging the user.',
+				error: String(error)
+			});
+		}
 
 		redirect(302, '/', { type: 'info', message: 'You successfully logged in.' }, event.cookies);
 	}
