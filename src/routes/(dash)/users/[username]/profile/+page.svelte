@@ -48,6 +48,19 @@
 	// Use helper-based permission check like on the username page
 	const isSelf = $derived(isSelfUtil(page.data.authUser.id, $form.userId));
 
+	// Normalized phone for "tel: link" after passing the schema.
+	const normalizedPhone = $derived(() => {
+		let raw = $phoneForm.phone?.trim();
+		if (!raw) return '';
+		// Remove spaces
+		let val = raw.replace(/\s+/g, '');
+		// Convert 00 international prefix to +
+		if (val.startsWith('00')) {
+			val = '+' + val.slice(2);
+		}
+		return val;
+	});
+
 	// Tipex
 	import { Tipex } from '@friendofsvelte/tipex';
 
@@ -215,9 +228,13 @@
 						<p class="label-text">Phone</p>
 						<div class="input-group grid-cols-[auto_1fr_auto]">
 							<div class="ig-cell preset-tonal py-1.5"><Phone size={iconSize} /></div>
-							<span class="ig-input text-sm"
-								><a href="tel:{$phoneForm.phone}">{$phoneForm.phone}</a></span
-							>
+							<span class="ig-input text-sm">
+								{#if normalizedPhone()}
+									<a href={'tel:' + normalizedPhone()}>{$phoneForm.phone}</a>
+								{:else}
+									{$phoneForm.phone}
+								{/if}
+							</span>
 						</div>
 					</div>
 				{/if}
