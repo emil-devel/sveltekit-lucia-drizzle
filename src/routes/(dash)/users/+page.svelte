@@ -14,7 +14,7 @@
 </svelte:head>
 
 <article class="">
-	<header class="flex flex-row-reverse items-center gap-4 border-b border-b-surface-200-800 pb-4">
+	<header class="flex flex-row-reverse items-center gap-4 pb-4">
 		<h2 class="flex items-center justify-end gap-2 h4">
 			<UsersRound />
 			<span>Users</span>
@@ -29,14 +29,19 @@
 	</header>
 
 	<dl>
-		<dt class="grid grid-cols-5 gap-2 p-2 text-sm text-surface-600-400">
+		<dt
+			class="my-4 grid grid-cols-5 gap-2 border-b border-b-surface-200-800 p-2 text-sm text-surface-600-400"
+		>
 			<span>&nbsp;</span> <span>username</span> <span>role</span>
 			<span class="text-center">active</span>
 			<span class="text-right">registred</span>
 		</dt>
 		{#each users as user (user.id)}
 			<dd class="my-2 card preset-filled-surface-100-900 card-hover">
-				<a class="grid grid-cols-5 items-center gap-2 p-2" href="/users/{user.username}">
+				<a
+					class="grid grid-cols-5 items-center gap-2 border-r-[.25em] border-l-[.25em] border-surface-100-900 p-2 hover:border-primary-300-700"
+					href="/users/{user.username}"
+				>
 					<Avatar class="h-10 w-10 text-xs">
 						<Avatar.Image src={user.avatar} />
 						<Avatar.Fallback>{user.firstName?.at(0)}{user.lastName?.at(0)}</Avatar.Fallback>

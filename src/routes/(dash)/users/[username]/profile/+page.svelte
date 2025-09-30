@@ -50,7 +50,6 @@
 
 	// Tipex
 	import { Tipex } from '@friendofsvelte/tipex';
-	import '@friendofsvelte/tipex/styles/index.css';
 
 	// Initial HTML content from server form
 	let body = $state($bioForm.bio ?? '');
@@ -76,7 +75,7 @@
 	<meta name="description" content="Seiten Beschreibung" />
 </svelte:head>
 
-<section class="m-auto max-w-lg space-y-4">
+<section class="m-auto max-w-sm space-y-4">
 	<div
 		class="divide-y divide-surface-200-800 card border-[1px] border-surface-200-800 preset-filled-surface-100-900"
 	>
@@ -241,8 +240,7 @@
 								bind:tipex={editor}
 								floating
 								focal
-								style="margin-top: 1rem; margin-bottom: 0;"
-								class="h-[70vh] border border-neutral-200/80"
+								class="h-[40vh] border border-surface-200-800"
 							/>
 						</div>
 					{:else}

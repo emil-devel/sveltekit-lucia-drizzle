@@ -10,6 +10,8 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@import '@friendofsvelte/tipex/styles/index.css';
+
 svg {
 	display: inline-block;
 }
