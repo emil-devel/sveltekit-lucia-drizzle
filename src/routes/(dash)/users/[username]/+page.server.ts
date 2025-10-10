@@ -20,9 +20,9 @@ import {
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
 
-	const getUserForms = async (username: string) => {
+	const getUser = async (username: string) => {
 		// Single round-trip: user + profile via LEFT JOIN (profile expected to exist, but we guard anyway)
-		const rows = await db
+		const users = await db
 			.select({
 				userId: table.user.id,
 				active: table.user.active,
@@ -41,22 +41,22 @@ export const load = (async (event) => {
 			.where(eq(table.user.username, username))
 			.limit(1);
 
-		const row = rows[0];
-		if (!row) throw redirect(302, '/users');
-		if (!row.profileId) throw redirect(302, '/users'); // invariant: profile should exist
+		const user = users[0];
+		if (!user) throw redirect(302, '/users');
+		if (!user.profileId) throw redirect(302, '/users'); // invariant: profile should exist
 
-		const uName = row.username;
-		const uEmail = row.email;
-		const uActive = row.active;
-		const uRole = row.role;
-		const id = row.userId;
-		const { updatedAt, createdAt } = row;
+		const uName = user.username;
+		const uEmail = user.email;
+		const uActive = user.active;
+		const uRole = user.role;
+		const id = user.userId;
+		const { updatedAt, createdAt } = user;
 
 		const normalizedProfile = {
-			id: row.profileId,
-			avatar: row.avatar ?? '',
-			firstName: row.firstName ?? '',
-			lastName: row.lastName ?? ''
+			id: user.profileId,
+			avatar: user.avatar ?? '',
+			firstName: user.firstName ?? '',
+			lastName: user.lastName ?? ''
 		};
 
 		const [usernameForm, emailForm, activeForm, roleForm, deleteForm] = await Promise.all([
@@ -82,7 +82,7 @@ export const load = (async (event) => {
 		};
 	};
 
-	return { form: await getUserForms(event.params.username) };
+	return await getUser(event.params.username);
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {

@@ -24,13 +24,13 @@
 
 	let { data }: PageProps = $props();
 
-	const { id, avatar, createdAt, firstName, lastName, updatedAt } = $derived(data.form);
+	const { id, avatar, createdAt, firstName, lastName, updatedAt } = data;
 
 	const {
 		enhance: usernameEnhance,
 		form: usernameForm,
 		errors: usernameErrors
-	} = superForm(data.form.usernameForm, {
+	} = superForm(data.usernameForm, {
 		validators: valibot(userNameSchema),
 		validationMethod: 'oninput'
 	});
@@ -38,13 +38,13 @@
 		enhance: emailEnhance,
 		form: emailForm,
 		errors: emailErrors
-	} = superForm(data.form.emailForm, {
+	} = superForm(data.emailForm, {
 		validators: valibot(userEmailSchema),
 		validationMethod: 'oninput'
 	});
-	const { enhance: activeEnhance, form: activeForm } = superForm(data.form.activeForm);
-	const { enhance: roleEnhance, form: roleForm } = superForm(data.form.roleForm);
-	const { enhance: deleteEnhance } = superForm(data.form.deleteForm);
+	const { enhance: activeEnhance, form: activeForm } = superForm(data.activeForm);
+	const { enhance: roleEnhance, form: roleForm } = superForm(data.roleForm);
+	const { enhance: deleteEnhance } = superForm(data.deleteForm);
 
 	const errorsUsername = $derived(($usernameErrors.username ?? []) as string[]);
 	const errorsEmail = $derived(($emailErrors.email ?? []) as string[]);
