@@ -96,6 +96,11 @@ export const ROLE_ENUM = {
 export const roleUserSchema = object({ id: string(), role: enum_(ROLE_ENUM) });
 
 // Per-field schemas for profile page partial updates
+export const profileAvatarSchema = object({
+	id: string(),
+	avatar: string()
+});
+
 export const profileFirstNameSchema = object({
 	id: string(),
 	firstName: optional(
@@ -172,17 +177,3 @@ export const profilePhoneSchema = object({
 	)
 });
 export const profileBioSchema = object({ id: string(), bio: optional(string()) });
-
-export const profileSchema = object({
-	id: string(),
-	name: string(),
-	userId: string(),
-	avatar: optional(string()),
-	firstName: optional(string()),
-	lastName: optional(string()),
-	phone: optional(string()),
-	bio: optional(string())
-});
-
-// Display-only avatar schema (no phone/bio/name grouping needed on username page)
-export const profileAvatarSchema = object({ id: string(), avatar: optional(string()) });

@@ -1,15 +1,13 @@
 import type { Actions, PageServerLoad } from './$types';
 import { redirect, setFlash } from 'sveltekit-flash-message/server';
 import { isAdmin, isSelf } from '$lib/permissions';
-
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq, asc, and } from 'drizzle-orm';
-
 import { fail, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import {
-	profileSchema,
+	profileAvatarSchema,
 	profileFirstNameSchema,
 	profileLastNameSchema,
 	profilePhoneSchema,
@@ -18,8 +16,7 @@ import {
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
-
-	const getProfileForms = async (username: string) => {
+	const getProfile = async (name: string) => {
 		// Fetch profile by name = username
 		const profiles = await db
 			.select({
@@ -33,44 +30,81 @@ export const load = (async (event) => {
 				bio: table.profile.bio
 			})
 			.from(table.profile)
-			.where(eq(table.profile.name, username))
+			.where(eq(table.profile.name, name))
 			.orderBy(asc(table.profile.id))
 			.limit(1);
-		const row = profiles[0];
-		if (!row) throw redirect(302, '/users');
+		const profile = profiles[0];
+		if (!profile) throw redirect(302, '/users');
 		// View policy: Users may view only their own profile; Admins may view any profile
 		const viewer = event.locals.authUser;
-		if (!viewer || !(isAdmin(viewer) || isSelf(viewer.id, row.userId))) {
+		if (!viewer || !(isAdmin(viewer) || isSelf(viewer.id, profile.userId)))
 			throw redirect(302, '/users');
-		}
-
-		const profile = {
-			...row,
-			avatar: row.avatar ?? '',
-			firstName: row.firstName ?? '',
-			lastName: row.lastName ?? '',
-			phone: row.phone ?? '',
-			bio: row.bio ?? ''
-		};
-
-		const [profileForm, firstNameForm, lastNameForm, phoneForm, bioForm] = await Promise.all([
-			superValidate(profile, valibot(profileSchema)),
+		// Create forms
+		const [avatarForm, firstNameForm, lastNameForm, phoneForm, bioForm] = await Promise.all([
 			superValidate(
-				{ id: profile.id, firstName: profile.firstName },
+				{ id: profile.id, avatar: profile.avatar as string | undefined },
+				valibot(profileAvatarSchema)
+			),
+			superValidate(
+				{ id: profile.id, firstName: profile.firstName as string | undefined },
 				valibot(profileFirstNameSchema)
 			),
-			superValidate({ id: profile.id, lastName: profile.lastName }, valibot(profileLastNameSchema)),
-			superValidate({ id: profile.id, phone: profile.phone }, valibot(profilePhoneSchema)),
-			superValidate({ id: profile.id, bio: profile.bio }, valibot(profileBioSchema))
+			superValidate(
+				{ id: profile.id, lastName: profile.lastName as string | undefined },
+				valibot(profileLastNameSchema)
+			),
+			superValidate(
+				{ id: profile.id, phone: profile.phone as string | undefined },
+				valibot(profilePhoneSchema)
+			),
+			superValidate(
+				{ id: profile.id, bio: profile.bio as string | undefined },
+				valibot(profileBioSchema)
+			)
 		]);
 
-		return { profileForm, firstNameForm, lastNameForm, phoneForm, bioForm };
+		return {
+			id: profile.id,
+			name: profile.name,
+			userId: profile.userId,
+			avatarForm,
+			firstNameForm,
+			lastNameForm,
+			phoneForm,
+			bioForm
+		};
 	};
 
-	return { form: await getProfileForms(event.params.username) };
+	return await getProfile(event.params.username);
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
+	avatar: async (event) => {
+		const avatarForm = await superValidate(event.request, valibot(profileAvatarSchema));
+		if (!avatarForm.valid) return fail(400, { avatarForm });
+		const viewer = event.locals.authUser;
+		if (!viewer) throw redirect(302, '/login');
+		const { id } = avatarForm.data;
+		const avatar = avatarForm.data.avatar === '' ? null : avatarForm.data.avatar;
+		try {
+			await db
+				.update(table.profile)
+				.set({ avatar })
+				.where(and(eq(table.profile.id, id)));
+		} catch (error) {
+			return setFlash(
+				{ type: 'error', message: error instanceof Error ? error.message : String(error) },
+				event.cookies
+			);
+		}
+		setFlash(
+			{
+				type: 'success',
+				message: `Avatar ${avatarForm.data.avatar === '' ? 'deleted' : 'updated'}.`
+			},
+			event.cookies
+		);
+	},
 	firstName: async (event) => {
 		const firstNameForm = await superValidate(event.request, valibot(profileFirstNameSchema));
 		if (!firstNameForm.valid) return fail(400, { firstNameForm });
