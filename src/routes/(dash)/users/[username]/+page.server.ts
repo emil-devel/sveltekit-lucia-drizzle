@@ -1,13 +1,10 @@
 import type { Actions, PageServerLoad } from './$types';
-
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { and, eq, not } from 'drizzle-orm';
-
 import { redirect, setFlash } from 'sveltekit-flash-message/server';
 import { fail, setError, superValidate } from 'sveltekit-superforms';
 import { isAdmin, isSelf } from '$lib/permissions';
-
 import { valibot } from 'sveltekit-superforms/adapters';
 import {
 	activeUserSchema,
@@ -24,6 +21,7 @@ export const load = (async (event) => {
 		// Single round-trip: user + profile via LEFT JOIN (profile expected to exist, but we guard anyway)
 		const users = await db
 			.select({
+				id: table.user.id,
 				userId: table.user.id,
 				active: table.user.active,
 				role: table.user.role,
@@ -45,25 +43,13 @@ export const load = (async (event) => {
 		if (!user) throw redirect(302, '/users');
 		if (!user.profileId) throw redirect(302, '/users'); // invariant: profile should exist
 
-		const uName = user.username;
-		const uEmail = user.email;
-		const uActive = user.active;
-		const uRole = user.role;
-		const id = user.userId;
-		const { updatedAt, createdAt } = user;
-
-		const normalizedProfile = {
-			id: user.profileId,
-			avatar: user.avatar ?? '',
-			firstName: user.firstName ?? '',
-			lastName: user.lastName ?? ''
-		};
+		const { id, updatedAt, createdAt } = user;
 
 		const [usernameForm, emailForm, activeForm, roleForm, deleteForm] = await Promise.all([
-			superValidate({ id, username: uName }, valibot(userNameSchema)),
-			superValidate({ id, email: uEmail }, valibot(userEmailSchema)),
-			superValidate({ id, active: uActive }, valibot(activeUserSchema)),
-			superValidate({ id, role: uRole }, valibot(roleUserSchema)),
+			superValidate({ id, username: user.username }, valibot(userNameSchema)),
+			superValidate({ id, email: user.email }, valibot(userEmailSchema)),
+			superValidate({ id, active: user.active }, valibot(activeUserSchema)),
+			superValidate({ id, role: user.role }, valibot(roleUserSchema)),
 			superValidate({ id }, valibot(userIdSchema))
 		]);
 
@@ -76,9 +62,9 @@ export const load = (async (event) => {
 			deleteForm,
 			updatedAt: updatedAt.toLocaleDateString(),
 			createdAt: createdAt.toLocaleDateString(),
-			avatar: normalizedProfile.avatar,
-			firstName: normalizedProfile.firstName,
-			lastName: normalizedProfile.lastName
+			avatar: user.avatar,
+			firstName: user.firstName,
+			lastName: user.lastName
 		};
 	};
 
