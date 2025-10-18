@@ -2,11 +2,24 @@
 	import type { PageProps } from './$types';
 	import { Switch } from '@skeletonlabs/skeleton-svelte';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte/composed';
-	import { Check, Funnel, FunnelX, Search, SearchX, UsersRound, X } from '@lucide/svelte';
+	import { Check, UsersRound, X } from '@lucide/svelte';
 
 	let { data }: PageProps = $props();
-	const users = $derived(data.users);
-	const countUser: number = $derived(users.length);
+	let { users } = data;
+
+	let role: string = $state('');
+	let search: string = $state('');
+
+	const filteredUsers = $derived(
+		users.filter((user) => {
+			if (role && role !== '' && user.role !== role) return false;
+			const term = search?.trim().toLowerCase();
+			if (!term) return true;
+			const username = (user.username || '').toLowerCase();
+			return username.includes(term);
+		})
+	);
+	const countUser: number = $derived(filteredUsers.length);
 </script>
 
 <svelte:head>
@@ -19,13 +32,28 @@
 			<UsersRound />
 			<span>Users</span>
 		</h2>
-		<label class="label flex items-center gap-1">
-			<input class="input w-fit" type="search" name="search" />
-			<Search size="20" />
-			<SearchX size="20" />
-			<Funnel size="20" />
-			<FunnelX size="20" />
-		</label>
+		<div class="flex flex-auto items-center gap-4">
+			<div>
+				<label class="label">
+					<select class="select" bind:value={role}>
+						<option value="" selected>All roles</option>
+						<option value="USER">User</option>
+						<option value="REDACTEUR">Redacteur</option>
+						<option value="ADMIN">Admin</option>
+					</select>
+				</label>
+			</div>
+			<div>
+				<label class="label"
+					><input
+						type="search"
+						class="input w-fit"
+						bind:value={search}
+						placeholder="Search users"
+					/></label
+				>
+			</div>
+		</div>
 	</header>
 
 	<dl>
@@ -36,7 +64,7 @@
 			<span class="text-center">active</span>
 			<span class="text-right">registred</span>
 		</dt>
-		{#each users as user (user.id)}
+		{#each filteredUsers as user (user.id)}
 			<dd class="my-2 card preset-filled-surface-100-900 card-hover">
 				<a
 					class="grid grid-cols-5 items-center gap-2 border-r-[.25em] border-l-[.25em] border-surface-100-900 p-2 hover:border-primary-300-700"
