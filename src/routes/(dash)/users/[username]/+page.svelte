@@ -5,8 +5,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { userEmailSchema, userNameSchema } from '$lib/valibot';
-	import { Switch } from '@skeletonlabs/skeleton-svelte';
-	import { Avatar } from '@skeletonlabs/skeleton-svelte/composed';
+	import { Avatar, Switch } from '@skeletonlabs/skeleton-svelte';
 	import { scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import {
@@ -177,15 +176,19 @@
 						<form bind:this={activeFormEl} method="post" action="?/active" use:activeEnhance>
 							<input class="input" type="hidden" name="id" value={id} />
 							<div class="flex flex-col gap-2">
-								<span class="label-text">Active</span>
 								<Switch
-									name="active"
 									checked={$activeForm.active}
 									onCheckedChange={(e) => {
-										$activeForm.active = e.checked; // update superform store so header classes react
+										$activeForm.active = e.checked;
 										activeFormEl?.requestSubmit();
 									}}
-								/>
+								>
+									<Switch.Label>Active</Switch.Label>
+									<Switch.Control>
+										<Switch.Thumb />
+									</Switch.Control>
+									<Switch.HiddenInput name="active" />
+								</Switch>
 							</div>
 						</form>
 						<form method="post" action="?/role" use:roleEnhance>

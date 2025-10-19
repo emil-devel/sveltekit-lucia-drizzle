@@ -1,15 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
-
 	import { enhance } from '$app/forms';
 	import favicon from '$lib/assets/favicon.svg';
-
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
-
-	import { House, LogOut, Settings, UserRound, UsersRound, X } from '@lucide/svelte';
-
-	let loggedUser: boolean = $state(false);
-	const closeAuthUser = () => (loggedUser = false);
+	import { Popover, Portal } from '@skeletonlabs/skeleton-svelte';
+	import { House, LogOut, Settings, UserRound, UsersRound } from '@lucide/svelte';
 
 	const logo_class = 'flex items-center gap-2';
 </script>
@@ -62,59 +56,59 @@
 	{/if}
 	<div>
 		{#if page.data.authUser}
-			<Popover
-				open={loggedUser}
-				onOpenChange={(e) => (loggedUser = e.open)}
-				positioning={{ placement: 'bottom' }}
-				triggerBase="btn btn-sm {page.data.authUser.role === 'USER'
-					? 'preset-filled-success-200-800'
-					: ''} {page.data.authUser.role === 'REDACTEUR'
-					? 'preset-filled-warning-200-800'
-					: ''} {page.data.authUser.role === 'ADMIN' ? 'preset-filled-error-200-800' : ''}"
-				contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-sm"
-				arrow
-				arrowBackground="!bg-surface-200 dark:!bg-surface-800"
-			>
-				{#snippet trigger()}
+			<Popover>
+				<Popover.Trigger
+					class="btn btn-sm {page.data.authUser.role === 'USER'
+						? 'preset-filled-success-200-800'
+						: ''} {page.data.authUser.role === 'REDACTEUR'
+						? 'preset-filled-warning-200-800'
+						: ''} {page.data.authUser.role === 'ADMIN' ? 'preset-filled-error-200-800' : ''}"
+				>
 					<UserRound size="16" />
 					{page.data.authUser.username}
-				{/snippet}
-				{#snippet content()}
-					<header class="flex flex-row-reverse">
-						<button class="btn-icon hover:preset-tonal" onclick={closeAuthUser}><X /></button>
-					</header>
-					<article>
-						<ul class="list space-y-2 pb-2 text-center text-sm">
-							<li
-								class:text-success-500={page.data.authUser.role === 'USER'}
-								class:text-warning-500={page.data.authUser.role === 'REDACTEUR'}
-								class:text-error-500={page.data.authUser.role === 'ADMIN'}
+				</Popover.Trigger>
+				<Portal>
+					<Popover.Positioner>
+						<Popover.Content class="max-w-md space-y-2 card bg-surface-100-900 p-4 shadow-xl">
+							<Popover.Description>
+								<ul class="list space-y-2 pb-2 text-center text-sm">
+									<li
+										class:text-success-500={page.data.authUser.role === 'USER'}
+										class:text-warning-500={page.data.authUser.role === 'REDACTEUR'}
+										class:text-error-500={page.data.authUser.role === 'ADMIN'}
+									>
+										<UserRound size={16} />
+										<span>{page.data.authUser.role.toLowerCase()}</span>
+									</li>
+									{#if page.url.pathname !== `/users/${page.data.authUser.username}`}
+										<li>
+											<a class="anchor" href="/users/{page.data.authUser.username}">
+												<Settings size={16} />
+												<span>Settings</span>
+											</a>
+										</li>
+									{/if}
+								</ul>
+								<hr class="hr opacity-20" />
+								<form
+									class="border-t-2 border-t-primary-100-900 pt-2 text-center"
+									method="post"
+									action="/logout"
+									use:enhance
+								>
+									<button class="btn preset-filled-secondary-200-800 btn-sm">
+										abmelden <LogOut size="16" />
+									</button>
+								</form>
+							</Popover.Description>
+							<Popover.Arrow
+								style="--arrow-size: calc(var(--spacing) * 2); --arrow-background: var(--color-surface-100-900);"
 							>
-								<UserRound size={16} />
-								<span>{page.data.authUser.role.toLowerCase()}</span>
-							</li>
-							{#if page.url.pathname !== `/users/${page.data.authUser.username}`}
-								<li>
-									<a class="anchor" href="/users/{page.data.authUser.username}">
-										<Settings size={16} />
-										<span>Settings</span>
-									</a>
-								</li>
-							{/if}
-						</ul>
-						<hr class="hr opacity-20" />
-						<form
-							class="border-t-2 border-t-primary-100-900 pt-2 text-center"
-							method="post"
-							action="/logout"
-							use:enhance
-						>
-							<button class="btn preset-filled-secondary-200-800 btn-sm">
-								logout <LogOut size="16" />
-							</button>
-						</form>
-					</article>
-				{/snippet}
+								<Popover.ArrowTip />
+							</Popover.Arrow>
+						</Popover.Content>
+					</Popover.Positioner>
+				</Portal>
 			</Popover>
 		{/if}
 	</div>
