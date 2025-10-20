@@ -41,7 +41,11 @@
 		<div class="flex flex-auto items-center gap-4">
 			<div>
 				<label class="label">
-					<select class="select" bind:value={role} onchange={() => (page = 1)}>
+					<select
+						class="select text-sm"
+						bind:value={role}
+						onchange={() => ((page = 1), (search = ''))}
+					>
 						<option value="" selected>All roles</option>
 						<option value="USER">User</option>
 						<option value="REDACTEUR">Redacteur</option>
@@ -53,7 +57,7 @@
 				<label class="label"
 					><input
 						type="search"
-						class="input w-fit"
+						class="input w-fit text-sm"
 						bind:value={search}
 						onkeydown={() => (page = 1)}
 						placeholder="Search users"
