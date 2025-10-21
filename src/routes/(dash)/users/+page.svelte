@@ -66,86 +66,94 @@
 			</div>
 		</div>
 	</header>
-
-	<dl>
-		<dt
-			class="my-4 grid grid-cols-5 gap-2 border-b border-b-surface-200-800 p-2 text-sm text-surface-600-400"
-		>
-			<span>&nbsp;</span> <span>username</span> <span>role</span>
-			<span class="text-center">active</span>
-			<span class="text-right">registred</span>
-		</dt>
-		{#each filteredUsers as user (user.id)}
-			<dd class="my-2 card preset-filled-surface-100-900 card-hover">
-				<a
-					class="grid grid-cols-5 items-center gap-2 border-r-[.25em] border-l-[.25em] border-surface-100-900 p-2 hover:border-primary-300-700"
-					href="/users/{user.username}"
-				>
-					<Avatar class="h-10 w-10 text-xs">
-						<Avatar.Image src={user.avatar} />
-						<Avatar.Fallback>{user.firstName?.at(0)}{user.lastName?.at(0)}</Avatar.Fallback>
-					</Avatar>
-					<span class="opacity-80">{user.username}</span>
-					<span
-						class="lowercase"
-						class:text-success-300-700={user.role === 'USER'}
-						class:text-warning-300-700={user.role === 'REDACTEUR'}
-						class:text-error-300-700={user.role === 'ADMIN'}>{user.role}</span
-					>
-					<Switch checked={user.active}>
-						<Switch.Control>
-							<Switch.Thumb>
-								<Switch.Context>
-									{#snippet children(switch_)}
-										{#if switch_().checked}
-											<Check />
-										{:else}
-											<X />
-										{/if}
-									{/snippet}
-								</Switch.Context>
-							</Switch.Thumb>
-						</Switch.Control>
-					</Switch>
-					<p class="text-right">
-						<span class="code">{user.createdAt}</span>
-					</p>
-				</a>
-			</dd>
-		{/each}
-	</dl>
-	<div class="my-4 flex items-center justify-between border-t border-t-surface-200-800 pt-2">
-		<p class="">
-			<span class="code">{countUser}</span> User{countUser === 1 ? '' : 's'}
-		</p>
-		{#if countUser > 5}
-			<Pagination
-				class="flex-auto"
-				count={filteredUsers.length}
-				pageSize={PAGE_SIZE}
-				{page}
-				onPageChange={(event) => (page = event.page)}
+	{#if countUser}
+		<dl>
+			<dt
+				class="my-4 grid grid-cols-5 gap-2 border-b border-b-surface-200-800 p-2 text-sm text-surface-600-400"
 			>
-				<Pagination.PrevTrigger>
-					<ArrowLeft class="size-4" />
-				</Pagination.PrevTrigger>
-				<Pagination.Context>
-					{#snippet children(pagination: any)}
-						{#each pagination().pages as page, index (page)}
-							{#if page.type === 'page'}
-								<Pagination.Item {...page}>
-									{page.value}
-								</Pagination.Item>
-							{:else}
-								<Pagination.Ellipsis {index}>&#8230;</Pagination.Ellipsis>
-							{/if}
-						{/each}
-					{/snippet}
-				</Pagination.Context>
-				<Pagination.NextTrigger>
-					<ArrowRight class="size-4" />
-				</Pagination.NextTrigger>
-			</Pagination>
-		{/if}
-	</div>
+				<span>&nbsp;</span> <span>username</span> <span>role</span>
+				<span class="text-center">active</span>
+				<span class="text-right">registred</span>
+			</dt>
+			{#each paginated as user (user.id)}
+				<dd class="my-2 card preset-filled-surface-100-900 card-hover">
+					<a
+						class="grid grid-cols-5 items-center gap-2 border-r-[.25em] border-l-[.25em] border-surface-100-900 p-2 hover:border-primary-300-700"
+						href="/users/{user.username}"
+					>
+						<Avatar class="h-10 w-10 text-xs">
+							<Avatar.Image src={user.avatar} />
+							<Avatar.Fallback>{user.firstName?.at(0)}{user.lastName?.at(0)}</Avatar.Fallback>
+						</Avatar>
+						<span class="opacity-80">{user.username}</span>
+						<span
+							class="lowercase"
+							class:text-success-300-700={user.role === 'USER'}
+							class:text-warning-300-700={user.role === 'REDACTEUR'}
+							class:text-error-300-700={user.role === 'ADMIN'}>{user.role}</span
+						>
+						<Switch checked={user.active}>
+							<Switch.Control>
+								<Switch.Thumb>
+									<Switch.Context>
+										{#snippet children(switch_)}
+											{#if switch_().checked}
+												<Check />
+											{:else}
+												<X />
+											{/if}
+										{/snippet}
+									</Switch.Context>
+								</Switch.Thumb>
+							</Switch.Control>
+						</Switch>
+						<p class="text-right">
+							<span class="code">{user.createdAt}</span>
+						</p>
+					</a>
+				</dd>
+			{/each}
+		</dl>
+		<div
+			class="my-4 flex flex-row-reverse items-center gap-4 border-t border-t-surface-200-800 pt-2"
+		>
+			<p class="">
+				<span class="code">{countUser}</span> User{countUser === 1 ? '' : 's'}
+			</p>
+			{#if countUser > 5}
+				<div class="flex-auto">
+					<Pagination
+						count={filteredUsers.length}
+						pageSize={PAGE_SIZE}
+						{page}
+						onPageChange={(event) => (page = event.page)}
+					>
+						<Pagination.PrevTrigger>
+							<ArrowLeft class="size-4" />
+						</Pagination.PrevTrigger>
+						<Pagination.Context>
+							{#snippet children(pagination: any)}
+								{#each pagination().pages as page, index (page)}
+									{#if page.type === 'page'}
+										<Pagination.Item {...page}>
+											{page.value}
+										</Pagination.Item>
+									{:else}
+										<Pagination.Ellipsis {index}>&#8230;</Pagination.Ellipsis>
+									{/if}
+								{/each}
+							{/snippet}
+						</Pagination.Context>
+						<Pagination.NextTrigger>
+							<ArrowRight class="size-4" />
+						</Pagination.NextTrigger>
+					</Pagination>
+				</div>
+			{/if}
+		</div>
+	{:else}
+		<p class="p-4 text-center text-sm text-surface-600-400">
+			No resilts{search ? ' for "' + search + '"' : ''}{role ? ' as ' + role.toLowerCase() : ''}.
+		</p>
+	{/if}
 </article>

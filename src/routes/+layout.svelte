@@ -24,10 +24,10 @@
 		if (!$flash) return;
 
 		const t = String($flash.type);
-		if (t === 'error') toaster.error({ description: $flash.message });
-		if (t === 'warning') toaster.warning({ description: $flash.message });
-		if (t === 'success') toaster.success({ description: $flash.message });
-		if (t === 'info') toaster.info({ description: $flash.message });
+		if (t === 'error') toaster.error({ description: $flash.message, duration: ms });
+		if (t === 'warning') toaster.warning({ description: $flash.message, duration: ms });
+		if (t === 'success') toaster.success({ description: $flash.message, duration: ms });
+		if (t === 'info') toaster.info({ description: $flash.message, duration: ms });
 
 		$flash = undefined;
 	});
@@ -39,7 +39,7 @@
 
 <Toast.Group {toaster}>
 	{#snippet children(toast)}
-		<Toast {toast}>
+		<Toast {toast} class="w-sm">
 			<Toast.Message>
 				<Toast.Title>{toast.title}</Toast.Title>
 				<Toast.Description>{toast.description}</Toast.Description>
