@@ -11,8 +11,8 @@
 
 	const outer = 'px-2 sm:py-4';
 	const inner = 'w-full max-w-4xl mx-auto  py-4 space-y-4';
-	const border_t = 'border-t-[.1rem] border-t-primary-200-800';
-	const border_b = 'border-b-[.1rem] border-b-primary-200-800';
+	const border_t = 'border-t border-t-primary-200-800';
+	const border_b = 'border-b border-b-primary-200-800';
 
 	let { children, data } = $props();
 
