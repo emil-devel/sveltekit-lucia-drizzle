@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { Avatar, Pagination, Switch } from '@skeletonlabs/skeleton-svelte';
+	import { Avatar, Pagination } from '@skeletonlabs/skeleton-svelte';
 	import { ArrowLeft, ArrowRight, Check, UsersRound, X } from '@lucide/svelte';
 
 	let { data }: PageProps = $props();
@@ -30,6 +30,7 @@
 
 <svelte:head>
 	<title>Users</title>
+	<meta name="description" content="List of users" />
 </svelte:head>
 
 <article class="">
@@ -92,21 +93,13 @@
 							class:text-warning-300-700={user.role === 'REDACTEUR'}
 							class:text-error-300-700={user.role === 'ADMIN'}>{user.role}</span
 						>
-						<Switch checked={user.active}>
-							<Switch.Control>
-								<Switch.Thumb>
-									<Switch.Context>
-										{#snippet children(switch_)}
-											{#if switch_().checked}
-												<Check />
-											{:else}
-												<X />
-											{/if}
-										{/snippet}
-									</Switch.Context>
-								</Switch.Thumb>
-							</Switch.Control>
-						</Switch>
+						<div class="text-center {user.active ? 'text-success-300-700' : 'text-error-300-700'}">
+							{#if user.active}
+								<Check />
+							{:else}
+								<X />
+							{/if}
+						</div>
 						<p class="text-right">
 							<span class="code">{user.createdAt}</span>
 						</p>
