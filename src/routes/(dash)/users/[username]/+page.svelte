@@ -23,20 +23,20 @@
 
 	let { data }: PageProps = $props();
 
-	const { id, avatar, createdAt, firstName, lastName, updatedAt } = data;
+	const { id, createdAt, firstName, lastName, updatedAt } = data;
 
 	const {
 		enhance: usernameEnhance,
-		form: usernameForm,
-		errors: usernameErrors
+		errors: usernameErrors,
+		form: usernameForm
 	} = superForm(data.usernameForm, {
 		validators: valibot(userNameSchema),
 		validationMethod: 'oninput'
 	});
 	const {
 		enhance: emailEnhance,
-		form: emailForm,
-		errors: emailErrors
+		errors: emailErrors,
+		form: emailForm
 	} = superForm(data.emailForm, {
 		validators: valibot(userEmailSchema),
 		validationMethod: 'oninput'
@@ -65,7 +65,7 @@
 
 <section class="m-auto max-w-sm space-y-4">
 	<div
-		class="block max-w-md divide-y divide-surface-200-800 card border-[1px] border-surface-200-800 preset-filled-surface-100-900"
+		class="block max-w-md divide-y divide-surface-200-800 card border border-surface-200-800 preset-filled-surface-100-900"
 	>
 		<header
 			class="flex flex-row-reverse items-center justify-between gap-4 p-4"
@@ -91,7 +91,7 @@
 				class:border-error-300-700={$roleForm.role === 'ADMIN'}
 			>
 				<Avatar class="h-full w-full bg-surface-100-900">
-					<Avatar.Image src={avatar} />
+					<Avatar.Image src={data.avatar} />
 					<Avatar.Fallback>
 						{firstName?.at(0)}{lastName?.at(0)}
 					</Avatar.Fallback>
@@ -211,7 +211,7 @@
 				{/if}
 			</div>
 			{#if canAdminManage}
-				<div class="mt-8 h-16 overflow-y-hidden border-t-[1px] border-surface-200-800 py-8">
+				<div class="mt-8 h-16 overflow-y-hidden border-t border-surface-200-800 py-8">
 					{#if deleteConfirm}
 						<div
 							class="flex items-center justify-center gap-2"
@@ -258,9 +258,7 @@
 			{/if}
 		</footer>
 	</div>
-	<div
-		class="mt-8 flex items-center justify-between gap-4 border-t-[1px] border-surface-200-800 p-2"
-	>
+	<div class="mt-8 flex items-center justify-between gap-4 border-t border-surface-200-800 p-2">
 		<a class="btn preset-tonal btn-sm" href="/users">
 			<ArrowBigLeft size={iconSize} />
 			Users

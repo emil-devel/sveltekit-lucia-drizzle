@@ -2,151 +2,34 @@
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
 	import { superForm } from 'sveltekit-superforms';
-	import { Avatar, FileUpload } from '@skeletonlabs/skeleton-svelte';
-	import { scale, slide } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
+	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { isSelf as isSelfUtil } from '$lib/permissions';
-	import { valibot } from 'sveltekit-superforms/adapters';
-	import {
-		profileFirstNameSchema,
-		profileLastNameSchema,
-		profilePhoneSchema,
-		profileBioSchema,
-		profileAvatarSchema
-	} from '$lib/valibot';
-	import {
-		ArrowBigLeft,
-		CircleX,
-		ImagePlus,
-		Paperclip,
-		Phone,
-		Trash,
-		UserRound,
-		UserRoundPen,
-		X
-	} from '@lucide/svelte';
+	import AvatarUpload from '$lib/components/profile/Avatar.svelte';
+	import FirstName from '$lib/components/profile/FirstName.svelte';
+	import LastName from '$lib/components/profile/LastName.svelte';
+	import Phone from '$lib/components/profile/Phone.svelte';
+	import Bio from '$lib/components/profile/Bio.svelte';
+	import { ArrowBigLeft, UserRound, UserRoundPen } from '@lucide/svelte';
 	const iconSize: number = 16;
 
 	let { data }: PageProps = $props();
 
 	// Destructure basic fields
-	const { id, name, userId }: any = data;
+	const { id, name, userId } = data;
 	// Forms
-	const {
-		enhance: avatarEnhance,
-		errors: avatarErrors,
-		form: avatarForm
-	} = superForm(data.avatarForm, {
-		validators: valibot(profileAvatarSchema),
-		validationMethod: 'onblur'
+	const { form: avatarForm } = superForm(data.avatarForm, { warnings: { duplicateId: false } });
+	const { form: firstNameForm } = superForm(data.firstNameForm, {
+		warnings: { duplicateId: false }
 	});
-	const {
-		enhance: firstNameEnhance,
-		form: firstNameForm,
-		errors: firstNameErrors
-	} = superForm(data.firstNameForm, { validators: valibot(profileFirstNameSchema) });
-	const {
-		enhance: lastNameEnhance,
-		form: lastNameForm,
-		errors: lastNameErrors
-	} = superForm(data.lastNameForm, { validators: valibot(profileLastNameSchema) });
-	const {
-		enhance: phoneEnhance,
-		form: phoneForm,
-		errors: phoneErrors
-	} = superForm(data.phoneForm, { validators: valibot(profilePhoneSchema) });
-	const { enhance: bioEnhance, form: bioForm } = superForm(data.bioForm, {
-		validators: valibot(profileBioSchema),
-		dataType: 'json'
-	});
+	const { form: lastNameForm } = superForm(data.lastNameForm, { warnings: { duplicateId: false } });
 
-	const errorsAvatar = $derived(($avatarErrors.avatar ?? []) as string[]);
-	const errorsFirstName = $derived(($firstNameErrors.firstName ?? []) as string[]);
-	const errorsLastName = $derived(($lastNameErrors.lastName ?? []) as string[]);
-	const errorsPhone = $derived(($phoneErrors.phone ?? []) as string[]);
-
-	// Use helper-based permission check like on the username page
+	// Use helper-based permission check
 	const isSelf = $derived(isSelfUtil(page.data.authUser.id, userId));
-
-	// Normalized phone for "tel: link" after passing the schema.
-	const normalizedPhone = $derived(() => {
-		let raw = $phoneForm.phone?.trim();
-		if (!raw) return '';
-		// Remove spaces
-		let val = raw.replace(/\s+/g, '');
-		// Convert 00 international prefix to +
-		if (val.startsWith('00')) {
-			val = '+' + val.slice(2);
-		}
-		return val;
-	});
-
-	// Tipex
-	import { Tipex } from '@friendofsvelte/tipex';
-
-	// Initial HTML content from server form
-	let body = $state($bioForm.bio ?? '');
-	// Editor instance binding (use a permissive type to avoid tiptap version type mismatches)
-	let editor = $state<any>();
-	// Always up-to-date HTML extracted from the editor
-	const htmlContent = $derived(editor?.getHTML() ?? body);
-
-	// Keep superform field in sync so JSON submission includes latest HTML
-	$effect(() => {
-		if (editor) {
-			const current = editor.getHTML();
-			if (current !== $bioForm.bio) {
-				$bioForm.bio = current;
-			}
-		}
-	});
-
-	// FileUpload Component (Avatar)
-	let avatarEdit = $state(false);
-	let avatarDelete = $state(false);
-	let avatarFormEl: HTMLFormElement | null = $state(null);
-	let avatarPreview: string | undefined = $state();
-	const avatarUpload = (details: any) => {
-		// Normalize payload to support both CustomEvent and direct object usage
-		const payload = details?.detail ?? details;
-		avatarErrors.set({ avatar: [] });
-		const file = payload?.files?.[0] ?? payload?.file ?? payload?.acceptedFiles?.[0];
-		// If no file present, this is likely a remove/clear event from FileUpload
-		if (!file) {
-			avatarPreview = undefined;
-			avatarErrors.set({ avatar: [] });
-			return;
-		}
-		// Always build preview first, even if the file turns out invalid
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			avatarPreview = e.target?.result as string;
-		};
-		reader.readAsDataURL(file);
-		// Validate after kicking off preview build
-		const messages: string[] = [];
-		if (file.size > 350000) messages.push('Avatar image too large (max ~250KB)!');
-		const allowedFormats = ['.png', '.jpeg', '.jpg', '.webp', '.gif', '.svg'];
-		if (!allowedFormats.some((ext) => file.name?.toLowerCase().endsWith(ext))) {
-			messages.push('Invalid file format. Allowed: PNG, JPEG, JPG, WEBP, GIF, SVG');
-		}
-		if (messages.length > 0) {
-			avatarErrors.set({ avatar: messages });
-			// Keep preview visible; do not submit
-			return;
-		}
-		// Submit after preview is set and no validation errors
-		setTimeout(() => {
-			if (avatarPreview && errorsAvatar.length === 0) {
-				avatarFormEl?.requestSubmit();
-			}
-		}, 100);
-	};
 </script>
 
 <svelte:head>
-	<title>Users Profile: {name}</title>
-	<meta name="description" content="Page Description" />
+	<title>User Profile: {name}</title>
+	<meta name="description" content="User Profile: First Name, Last Name, Phone, Bio." />
 </svelte:head>
 
 <section class="m-auto max-w-xl space-y-4">
@@ -180,298 +63,14 @@
 				<h2 class="py-4 text-right h6">
 					<span>Profile</span>
 				</h2>
-				{#if isSelf}
-					<div>
-						<button onclick={() => (avatarEdit = !avatarEdit)} class="btn preset-tonal btn-sm"
-							><UserRoundPen size={16} /> Avatar Edit</button
-						>
-					</div>
-					{#if avatarEdit}
-						<div class="border border-surface-200-800 p-2" transition:slide>
-							<form
-								bind:this={avatarFormEl}
-								method="post"
-								action="?/avatar"
-								enctype="multipart/form-data"
-								use:avatarEnhance={{
-									onResult: ({ result }) => {
-										const status = (result as any)?.status ?? 200;
-										const isFailure = (result as any)?.type === 'failure' || status >= 400;
-										if (!isFailure) {
-											const newAvatar: unknown = (result as any)?.data?.form?.data?.avatar;
-											// Update both the store and preview
-											if (typeof newAvatar === 'string') {
-												if (newAvatar.length > 0) {
-													// Upload path: server returned the new avatar string
-													$avatarForm.avatar = newAvatar;
-													avatarPreview = newAvatar;
-												} else {
-													// Deletion path: explicit empty string means clear
-													$avatarForm.avatar = '' as any;
-													avatarPreview = undefined;
-												}
-											} else {
-												// Server did not echo avatar back.
-												// If we have a local preview, assume upload success and use it;
-												// otherwise assume deletion success and clear immediately.
-												if (avatarPreview && avatarPreview.length > 0) {
-													$avatarForm.avatar = avatarPreview;
-												} else {
-													$avatarForm.avatar = '' as any;
-													avatarPreview = undefined;
-												}
-											}
-											// Clear the FileUpload chip by resetting the form after the state updates have propagated
-											setTimeout(() => {
-												avatarFormEl?.reset();
-											}, 0);
-										}
-									}
-								}}
-							>
-								<input type="hidden" name="id" value={id} />
-								<input type="hidden" name="avatar" bind:value={avatarPreview} />
-								<div class="grid grid-cols-2 gap-4">
-									<div class="relative flex items-center justify-center">
-										{#if avatarPreview || $avatarForm.avatar}
-											{#key avatarPreview && avatarPreview.length > 0 ? avatarPreview : $avatarForm.avatar}
-												<img
-													src={avatarPreview && avatarPreview.length > 0
-														? avatarPreview
-														: $avatarForm.avatar}
-													alt="Avatar Preview"
-													class="max-w-full object-cover"
-												/>
-											{/key}
-											{#if !avatarPreview && $avatarForm.avatar}
-												{#if avatarDelete}
-													<div class="absolute top-1 left-0 w-full" transition:scale>
-														<p class="text-center">Really delete?</p>
-														<div class="flex justify-center gap-2">
-															<button
-																class="mt-2 btn preset-filled-error-300-700 btn-sm"
-																type="submit"
-																onclick={() => (avatarDelete = false)}
-															>
-																<Trash size={16} />
-																<span>Yes, Remove</span>
-															</button>
-															<button
-																class="mt-2 btn preset-filled-surface-300-700 btn-sm"
-																type="button"
-																onclick={() => (avatarDelete = false)}
-															>
-																<X size={16} />
-																<span>Cancel</span>
-															</button>
-														</div>
-													</div>
-												{:else}
-													<button
-														class="absolute top-1.5 right-2.5 mt-2 btn-icon btn rounded-full preset-filled-error-300-700 p-1.5"
-														type="submit"
-														onclick={(e) => {
-															e.preventDefault();
-															avatarDelete = true;
-														}}
-														aria-label="Delete Avatar"
-														transition:scale
-													>
-														<Trash />
-													</button>
-												{/if}
-											{/if}
-										{:else}
-											<p>No Avatar.</p>
-										{/if}
-									</div>
-									<div class="flex items-center justify-center">
-										<FileUpload maxFiles={1} onFileChange={avatarUpload}>
-											<FileUpload.Dropzone>
-												<ImagePlus class="size-8" />
-												<span>Select file or drag here.</span>
-												<FileUpload.Trigger>Browse Files</FileUpload.Trigger>
-												<FileUpload.HiddenInput />
-											</FileUpload.Dropzone>
-											<FileUpload.ItemGroup>
-												<FileUpload.Context>
-													{#snippet children(fileUpload)}
-														{#each fileUpload().acceptedFiles as file (file.name)}
-															<FileUpload.Item {file}>
-																<FileUpload.ItemName>{file.name}</FileUpload.ItemName>
-																<FileUpload.ItemSizeText>{file.size} bytes</FileUpload.ItemSizeText>
-																<FileUpload.ItemDeleteTrigger />
-															</FileUpload.Item>
-														{/each}
-													{/snippet}
-												</FileUpload.Context>
-											</FileUpload.ItemGroup>
-										</FileUpload>
-									</div>
-								</div>
-							</form>
-						</div>
-					{/if}
-					{#if avatarPreview && errorsAvatar.length > 0}
-						<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-							{#each errorsAvatar as message, i (i)}
-								<p
-									class="card preset-filled-error-300-700 p-2"
-									transition:slide={{ duration: 140 }}
-									animate:flip={{ duration: 160 }}
-								>
-									{message}
-								</p>
-							{/each}
-						</div>
-					{/if}
-					<form method="post" action="?/firstName" use:firstNameEnhance>
-						<input class="input" type="hidden" name="id" value={id} />
-						<label class="label label-text" for="firstName">First Name</label>
-						<div class="input-group grid-cols-[auto_1fr_auto]">
-							<div class="ig-cell preset-tonal py-1.5">
-								<UserRound size={iconSize} />
-							</div>
-							<input
-								class="ig-input text-sm"
-								type="text"
-								name="firstName"
-								bind:value={$firstNameForm.firstName}
-								spellcheck="false"
-							/>
-							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
-						</div>
-					</form>
-					{#if errorsFirstName && $firstNameForm.firstName}
-						<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-							{#each errorsFirstName as message, i (i)}
-								<p
-									class="card preset-filled-error-300-700 p-2"
-									transition:slide={{ duration: 140 }}
-									animate:flip={{ duration: 160 }}
-								>
-									{message}
-								</p>
-							{/each}
-						</div>
-					{/if}
-					<form method="post" action="?/lastName" use:lastNameEnhance>
-						<input class="input" type="hidden" name="id" value={id} />
-						<label class="label label-text" for="lastName">Last Name</label>
-						<div class="input-group grid-cols-[auto_1fr_auto]">
-							<div class="ig-cell preset-tonal py-1.5">
-								<UserRound size={iconSize} />
-							</div>
-							<input
-								class="ig-input text-sm"
-								type="text"
-								name="lastName"
-								bind:value={$lastNameForm.lastName}
-								spellcheck="false"
-							/>
-							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
-						</div>
-					</form>
-					{#if errorsLastName && $lastNameForm.lastName}
-						<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-							{#each errorsLastName as message, i (i)}
-								<p
-									class="card preset-filled-error-300-700 p-2"
-									transition:slide={{ duration: 140 }}
-									animate:flip={{ duration: 160 }}
-								>
-									{message}
-								</p>
-							{/each}
-						</div>
-					{/if}
-					<form method="post" action="?/phone" use:phoneEnhance>
-						<input class="input" type="hidden" name="id" value={id} />
-						<label class="label label-text" for="phone">Phone</label>
-						<div class="input-group grid-cols-[auto_1fr_auto]">
-							<div class="ig-cell preset-tonal py-1.5">
-								<Phone size={iconSize} />
-							</div>
-							<input
-								class="ig-input text-sm"
-								type="tel"
-								name="phone"
-								bind:value={$phoneForm.phone}
-								spellcheck="false"
-							/>
-							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
-						</div>
-					</form>
-					{#if errorsPhone && $phoneForm.phone}
-						<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-							{#each errorsPhone as message, i (i)}
-								<p
-									class="card preset-filled-error-300-700 p-2"
-									transition:slide={{ duration: 140 }}
-									animate:flip={{ duration: 160 }}
-								>
-									{message}
-								</p>
-							{/each}
-						</div>
-					{/if}
-				{:else}
-					<div>
-						<p class="label-text">First Name</p>
-						<div class="input-group grid-cols-[auto_1fr_auto]">
-							<div class="ig-cell preset-tonal py-1.5"><UserRound size={iconSize} /></div>
-							<span class="ig-input text-sm">{$firstNameForm.firstName}</span>
-						</div>
-					</div>
-					<div>
-						<p class="label-text">Last Name</p>
-						<div class="input-group grid-cols-[auto_1fr_auto]">
-							<div class="ig-cell preset-tonal py-1.5"><UserRound size={iconSize} /></div>
-							<span class="ig-input text-sm">{$lastNameForm.lastName}</span>
-						</div>
-					</div>
-					<div>
-						<p class="label-text">Phone</p>
-						<div class="input-group grid-cols-[auto_1fr_auto]">
-							<div class="ig-cell preset-tonal py-1.5"><Phone size={iconSize} /></div>
-							<span class="ig-input text-sm">
-								{#if normalizedPhone}
-									<a href={'tel:' + normalizedPhone}>{$phoneForm.phone}</a>
-								{:else}
-									{$phoneForm.phone}
-								{/if}
-							</span>
-						</div>
-					</div>
-				{/if}
+				<AvatarUpload {id} {data} {isSelf} {iconSize} />
+				<div class="flex gap-2">
+					<FirstName {id} {data} {isSelf} {iconSize} />
+					<LastName {id} {data} {isSelf} {iconSize} />
+				</div>
+				<Phone {id} {data} {isSelf} {iconSize} />
 				<div class="py-4">
-					{#if isSelf}
-						<form
-							class="flex items-baseline justify-between gap-4 pb-1"
-							method="post"
-							action="?/bio"
-							use:bioEnhance
-						>
-							<input class="input" type="hidden" name="id" value={id} />
-							<label class="label" for="id"><span class="label-text">Bio</span></label>
-							<!-- bio value provided via superforms JSON (kept in sync in script) -->
-							<button class="btn preset-tonal btn-sm" type="submit"> Submit </button>
-						</form>
-						<div class="pb-4">
-							<Tipex
-								body={$bioForm.bio}
-								bind:tipex={editor}
-								floating
-								focal
-								class="h-[40vh] border border-surface-200-800"
-							/>
-						</div>
-					{:else}
-						<h3 class="label-text">Bio</h3>
-						<div class="prose border border-surface-200-800 p-2 prose-invert">
-							{@html htmlContent}
-						</div>
-					{/if}
+					<Bio {id} {data} {isSelf} />
 				</div>
 			</div>
 		</article>
@@ -479,9 +78,7 @@
 			<small class="opacity-60">Footer</small>
 		</footer>
 	</div>
-	<div
-		class="mt-8 flex items-center justify-between gap-4 border-t-[1px] border-surface-200-800 p-2"
-	>
+	<div class="mt-8 flex items-center justify-between gap-4 border-t border-surface-200-800 p-2">
 		<a class="btn preset-tonal btn-sm" href="/users/{name}">
 			<ArrowBigLeft size={iconSize} />
 			{name}
