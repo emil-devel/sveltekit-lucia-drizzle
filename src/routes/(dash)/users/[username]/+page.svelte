@@ -91,7 +91,7 @@
 				class:border-error-300-700={$roleForm.role === 'ADMIN'}
 			>
 				<Avatar class="h-full w-full bg-surface-100-900">
-					<Avatar.Image src={data.avatar} />
+					<Avatar.Image src={data.avatar} alt="Avatar of the user {$usernameForm.username}" />
 					<Avatar.Fallback>
 						{firstName?.at(0)}{lastName?.at(0)}
 					</Avatar.Fallback>

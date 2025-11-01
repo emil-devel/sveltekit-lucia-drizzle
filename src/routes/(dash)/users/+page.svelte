@@ -42,6 +42,7 @@
 		<div class="flex flex-auto items-center gap-4">
 			<div>
 				<label class="label">
+					<span class="sr-only">Role</span>
 					<select
 						class="select text-sm"
 						bind:value={role}
@@ -55,8 +56,9 @@
 				</label>
 			</div>
 			<div>
-				<label class="label"
-					><input
+				<label class="label">
+					<span class="sr-only">Search</span>
+					<input
 						type="search"
 						class="input w-fit text-sm"
 						bind:value={search}
@@ -70,7 +72,7 @@
 	{#if countUser}
 		<dl>
 			<dt
-				class="my-4 grid grid-cols-5 gap-2 border-b border-b-surface-200-800 p-2 text-sm text-surface-600-400"
+				class="my-4 grid grid-cols-5 border-b border-b-surface-200-800 py-2 text-center text-sm text-surface-600-400"
 			>
 				<span>&nbsp;</span> <span>username</span> <span>role</span>
 				<span class="text-center">active</span>
@@ -79,19 +81,21 @@
 			{#each paginated as user (user.id)}
 				<dd class="my-2 card preset-filled-surface-100-900 card-hover">
 					<a
-						class="grid grid-cols-5 items-center gap-2 border-r-[.25em] border-l-[.25em] border-surface-100-900 p-2 hover:border-primary-300-700"
+						class="grid grid-cols-5 items-center border-r-[.25em] border-l-[.25em] border-surface-100-900 py-2 text-center hover:border-primary-300-700"
 						href="/users/{user.username}"
 					>
 						<Avatar class="h-10 w-10 text-xs">
-							<Avatar.Image src={user.avatar} />
-							<Avatar.Fallback>{user.firstName?.at(0)}{user.lastName?.at(0)}</Avatar.Fallback>
+							<Avatar.Image src={user.avatar} alt="Avatar of the user {user.username}" />
+							<Avatar.Fallback>
+								{user.firstName?.at(0)}{user.lastName?.at(0)}
+							</Avatar.Fallback>
 						</Avatar>
-						<span class="opacity-80">{user.username}</span>
+						<span class="text-surface-100">{user.username}</span>
 						<span
 							class="lowercase"
-							class:text-success-300-700={user.role === 'USER'}
-							class:text-warning-300-700={user.role === 'REDACTEUR'}
-							class:text-error-300-700={user.role === 'ADMIN'}>{user.role}</span
+							class:text-success-500={user.role === 'USER'}
+							class:text-warning-500={user.role === 'REDACTEUR'}
+							class:text-error-500={user.role === 'ADMIN'}>{user.role}</span
 						>
 						<div class="text-center {user.active ? 'text-success-300-700' : 'text-error-300-700'}">
 							{#if user.active}
@@ -101,7 +105,7 @@
 							{/if}
 						</div>
 						<p class="text-right">
-							<span class="code">{user.createdAt}</span>
+							<span class="text-xs text-surface-100">{user.createdAt}</span>
 						</p>
 					</a>
 				</dd>
@@ -116,6 +120,7 @@
 			{#if countUser > 5}
 				<div class="flex-auto">
 					<Pagination
+						class="flex-auto"
 						count={filteredUsers.length}
 						pageSize={PAGE_SIZE}
 						{page}
