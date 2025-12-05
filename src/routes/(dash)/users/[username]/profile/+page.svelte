@@ -12,7 +12,8 @@
 	import { ArrowBigLeft, UserRound, UserRoundPen } from '@lucide/svelte';
 	const iconSize: number = 16;
 
-	let { data }: PageProps = $props();
+	let props: PageProps = $props();
+	let data = $state(props.data);
 
 	// Destructure basic fields
 	const { id, name, userId } = data;

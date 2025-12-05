@@ -21,7 +21,8 @@
 	import { ROLES } from '$lib/permissions';
 	const roles = ROLES;
 
-	let { data }: PageProps = $props();
+	let props: PageProps = $props();
+	let data = $state(props.data);
 
 	const { id, createdAt, firstName, lastName, updatedAt } = data;
 

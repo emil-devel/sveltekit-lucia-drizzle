@@ -3,7 +3,9 @@
 	import { Avatar, Pagination } from '@skeletonlabs/skeleton-svelte';
 	import { ArrowLeft, ArrowRight, Check, UsersRound, X } from '@lucide/svelte';
 
-	let { data }: PageProps = $props();
+	let props: PageProps = $props();
+	let data = $state(props.data);
+
 	let { users } = data;
 
 	let role: string = $state('');

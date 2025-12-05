@@ -6,7 +6,9 @@
 	import { flip } from 'svelte/animate';
 	import { UserRound } from '@lucide/svelte';
 
-	let { id, data, isSelf, iconSize } = $props();
+	let props = $props();
+	let { id, isSelf, iconSize } = props;
+	let data = $state(props.data);
 
 	const {
 		enhance: lastNameEnhance,

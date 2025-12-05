@@ -7,7 +7,8 @@
 	import { fly, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 
-	let { data }: PageProps = $props();
+	let props: PageProps = $props();
+	let data = $state(props.data);
 
 	const { enhance, errors, form } = superForm(data.form, {
 		validators: valibot(loginSchema)

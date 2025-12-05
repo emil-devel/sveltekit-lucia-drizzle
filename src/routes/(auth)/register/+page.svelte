@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PageServerData } from './$types';
+	import type { PageProps } from './$types';
 	import { ArrowRight, Lock, LockOpen, LogIn, Mail, UserRound } from '@lucide/svelte';
 	import { registerSchema } from '$lib/valibot';
 	import { superForm } from 'sveltekit-superforms';
@@ -7,7 +7,8 @@
 	import { fly, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 
-	let { data }: { data: PageServerData } = $props();
+	let props: PageProps = $props();
+	let data = $state(props.data);
 
 	const { enhance, errors, form } = superForm(data.form, {
 		validators: valibot(registerSchema)

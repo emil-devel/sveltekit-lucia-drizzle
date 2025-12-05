@@ -3,7 +3,9 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
 
-	let { id, data, isSelf } = $props();
+	let props = $props();
+	let { id, isSelf } = props;
+	let data = $state(props.data);
 
 	const { enhance: bioEnhance, form: bioForm } = superForm(data.bioForm, {
 		validators: valibot(profileBioSchema),
