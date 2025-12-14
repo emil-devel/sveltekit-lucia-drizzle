@@ -29,6 +29,7 @@
 
 <svelte:head>
 	<title>Register</title>
+	<meta name="description" content="Create a new account" />
 </svelte:head>
 
 <section class="mx-auto max-w-xs">
