@@ -1,15 +1,13 @@
 import type { Actions, PageServerLoad } from './$types';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { hash } from '@node-rs/argon2';
-import { fail } from 'sveltekit-superforms';
+import { fail, setError, superValidate } from 'sveltekit-superforms';
 import { redirect } from 'sveltekit-flash-message/server';
-import { superValidate } from 'sveltekit-superforms';
 import { registerSchema } from '$lib/valibot';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { setError } from 'sveltekit-superforms';
 
 export const load = (async (event) => {
 	if (event.locals.authUser) throw redirect(302, '/');
@@ -25,8 +23,8 @@ export const actions: Actions = {
 
 		if (!form.valid) return fail(400, { form });
 
-		const userExist = await db.query.user.findFirst({ where: (u) => eq(u.username, username) });
-		if (userExist) return setError(form, 'username', 'Username already exist!');
+		const userExists = await db.query.user.findFirst({ where: (u) => eq(u.username, username) });
+		if (userExists) return setError(form, 'username', 'Username already exist!');
 
 		const emailExist = await db.query.user.findFirst({ where: (u) => eq(u.email, email) });
 		if (emailExist) return setError(form, 'email', 'Email already in use!');
