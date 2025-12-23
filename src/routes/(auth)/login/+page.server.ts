@@ -7,6 +7,7 @@ import { db } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import { verify } from '@node-rs/argon2';
 import * as auth from '$lib/server/auth';
+import { sanitizeFormData } from '$lib/server/sanitize';
 
 export const load = (async (event) => {
 	if (event.locals.authUser) throw redirect(302, '/');
@@ -17,7 +18,12 @@ export const load = (async (event) => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event.request, valibot(loginSchema));
+		const formData = await event.request.formData();
+		const data = sanitizeFormData(formData, {
+			trim: ['username'],
+			lowercase: ['username']
+		});
+		const form = await superValidate(data, valibot(loginSchema));
 		const { username, password } = form.data;
 
 		if (!form.valid) return fail(400, { form });

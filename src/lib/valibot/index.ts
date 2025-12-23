@@ -4,10 +4,7 @@ import {
 	pipe,
 	minLength,
 	regex,
-	toLowerCase,
-	trim,
 	email,
-	check,
 	boolean,
 	date,
 	optional,
@@ -17,7 +14,7 @@ import {
 // Keep role values in sync with $lib/permissions/ROLES and Prisma enum
 
 export const loginSchema = object({
-	username: pipe(string(), trim(), toLowerCase()),
+	username: string(),
 	password: string()
 });
 
@@ -27,7 +24,6 @@ export const registerSchema = pipe(
 			string(),
 			minLength(4, 'Username must be at least 4 characters long'),
 			maxLength(12, 'Username must be at most 12 characters long'),
-			trim(),
 			// 1. Allowed characters only
 			regex(
 				/^[a-z0-9._]+$/,
@@ -38,10 +34,9 @@ export const registerSchema = pipe(
 			// 3. Cannot start with specific characters (split for tailored messages)
 			regex(/^(?![0-9]).*$/, 'Username cannot start with a number'),
 			regex(/^(?!_).*/, 'Username cannot start with an underscore'),
-			regex(/^(?!\.).*/, 'Username cannot start with a dot'),
-			toLowerCase()
+			regex(/^(?!\.).*/, 'Username cannot start with a dot')
 		),
-		email: pipe(string(), email(), trim(), toLowerCase()),
+		email: pipe(string(), email()),
 		password: pipe(
 			string(),
 			minLength(8, 'Password must be at least 8 characters long'),
@@ -51,8 +46,7 @@ export const registerSchema = pipe(
 			regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
 		),
 		passwordConfirm: string()
-	}),
-	check((c) => c.passwordConfirm === c.password, 'Passwords dont match')
+	})
 );
 
 // Per-field schemas for user page partial updates
@@ -65,7 +59,6 @@ export const userNameSchema = object({
 		string(),
 		minLength(4, 'Username must be at least 4 characters long'),
 		maxLength(12, 'Username must be at most 12 characters long'),
-		trim(),
 		// 1. Allowed characters only
 		regex(
 			/^[a-z0-9._]+$/,
@@ -76,13 +69,12 @@ export const userNameSchema = object({
 		// 3. Cannot start with specific characters (split for tailored messages)
 		regex(/^(?![0-9]).*$/, 'Username cannot start with a number'),
 		regex(/^(?!_).*/, 'Username cannot start with an underscore'),
-		regex(/^(?!\.).*/, 'Username cannot start with a dot'),
-		toLowerCase()
+		regex(/^(?!\.).*/, 'Username cannot start with a dot')
 	)
 });
 export const userEmailSchema = object({
 	id: string(),
-	email: pipe(string(), email(), trim(), toLowerCase())
+	email: pipe(string(), email())
 });
 export const activeUserSchema = object({ id: string(), active: boolean() });
 
@@ -108,7 +100,6 @@ export const profileFirstNameSchema = object({
 			string(),
 			minLength(2, 'First name must be at least 2 characters long'),
 			maxLength(50, 'First name must be at most 50 characters long'),
-			trim(),
 			// Start with capital, allow up to 3 parts separated by single spaces; allowed chars letters, apostrophe, hyphen
 			regex(
 				/^[A-Z][a-zA-Z]*(?:[ '-][A-Za-z][a-zA-Z]*){0,2}$/,
@@ -140,7 +131,6 @@ export const profileLastNameSchema = object({
 			string(),
 			minLength(2),
 			maxLength(20),
-			trim(),
 			// Base allowed pattern (single or multi-part)
 			regex(
 				/^[A-Z][a-zA-Z]*(?:[ '-][A-Za-z][a-zA-Z]*)*$/,
@@ -162,17 +152,16 @@ export const profilePhoneSchema = object({
 	phone: optional(
 		pipe(
 			string(),
-			trim(),
 			// 1. Allowed characters: optional single leading +, then digits or spaces only (no brackets, dashes, dots)
 			regex(
 				/^\+?[0-9 ]+$/,
 				'Phone number can only contain digits, spaces and an optional leading +'
 			),
-			// 2. Total significant digits (remove spaces) must be 7–15
-			check((v) => {
-				const digits = v.replace(/[^0-9]/g, '');
-				return digits.length >= 7 && digits.length <= 15;
-			}, 'Phone number must contain between 7 and 15 digits')
+			// 2. Total significant digits (ignoring spaces) must be 7–15
+			regex(
+				/^(?=(?:[^0-9]*[0-9]){7,15}[^0-9]*$).*$/,
+				'Phone number must contain between 7 and 15 digits'
+			)
 		)
 	)
 });

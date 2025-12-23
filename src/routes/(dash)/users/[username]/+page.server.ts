@@ -13,6 +13,7 @@ import {
 	userIdSchema,
 	userEmailSchema
 } from '$lib/valibot';
+import { sanitizeFormData } from '$lib/server/sanitize';
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
@@ -73,7 +74,9 @@ export const load = (async (event) => {
 
 export const actions: Actions = {
 	username: async (event) => {
-		const usernameForm = await superValidate(event.request, valibot(userNameSchema));
+		const formData = await event.request.formData();
+		const data = sanitizeFormData(formData, { trim: ['username'], lowercase: ['username'] });
+		const usernameForm = await superValidate(data, valibot(userNameSchema));
 		const { id, username } = usernameForm.data;
 
 		if (!usernameForm.valid) return fail(400, { usernameForm });
@@ -102,7 +105,9 @@ export const actions: Actions = {
 		redirect('/users', { type: 'success', message: 'Username updated.' }, event.cookies);
 	},
 	email: async (event) => {
-		const emailForm = await superValidate(event.request, valibot(userEmailSchema));
+		const formData = await event.request.formData();
+		const data = sanitizeFormData(formData, { trim: ['email'], lowercase: ['email'] });
+		const emailForm = await superValidate(data, valibot(userEmailSchema));
 		const { id, email } = emailForm.data;
 
 		if (!emailForm.valid) return fail(400, { emailForm });

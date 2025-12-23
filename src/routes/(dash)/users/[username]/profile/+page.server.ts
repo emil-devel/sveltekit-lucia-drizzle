@@ -13,6 +13,7 @@ import {
 	profilePhoneSchema,
 	profileBioSchema
 } from '$lib/valibot';
+import { sanitizeFormData } from '$lib/server/sanitize';
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
@@ -106,7 +107,12 @@ export const actions: Actions = {
 		);
 	},
 	firstName: async (event) => {
-		const firstNameForm = await superValidate(event.request, valibot(profileFirstNameSchema));
+		const formData = await event.request.formData();
+		const data = sanitizeFormData(formData, {
+			trim: ['firstName'],
+			emptyToUndefined: ['firstName']
+		});
+		const firstNameForm = await superValidate(data, valibot(profileFirstNameSchema));
 		if (!firstNameForm.valid) return fail(400, { firstNameForm });
 
 		const viewer = event.locals.authUser;
@@ -128,7 +134,12 @@ export const actions: Actions = {
 		setFlash({ type: 'success', message: 'First name updated.' }, event.cookies);
 	},
 	lastName: async (event) => {
-		const lastNameForm = await superValidate(event.request, valibot(profileLastNameSchema));
+		const formData = await event.request.formData();
+		const data = sanitizeFormData(formData, {
+			trim: ['lastName'],
+			emptyToUndefined: ['lastName']
+		});
+		const lastNameForm = await superValidate(data, valibot(profileLastNameSchema));
 		if (!lastNameForm.valid) return fail(400, { lastNameForm });
 
 		const viewer = event.locals.authUser;
@@ -150,7 +161,12 @@ export const actions: Actions = {
 		setFlash({ type: 'success', message: 'Last name updated.' }, event.cookies);
 	},
 	phone: async (event) => {
-		const phoneForm = await superValidate(event.request, valibot(profilePhoneSchema));
+		const formData = await event.request.formData();
+		const data = sanitizeFormData(formData, {
+			trim: ['phone'],
+			emptyToUndefined: ['phone']
+		});
+		const phoneForm = await superValidate(data, valibot(profilePhoneSchema));
 		if (!phoneForm.valid) return fail(400, { phoneForm });
 
 		const viewer = event.locals.authUser;

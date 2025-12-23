@@ -8,6 +8,7 @@ import { valibot } from 'sveltekit-superforms/adapters';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { sanitizeFormData } from '$lib/server/sanitize';
 
 export const load = (async (event) => {
 	if (event.locals.authUser) throw redirect(302, '/');
@@ -18,10 +19,18 @@ export const load = (async (event) => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event.request, valibot(registerSchema));
+		const formData = await event.request.formData();
+		const data = sanitizeFormData(formData, {
+			trim: ['username', 'email'],
+			lowercase: ['username', 'email']
+		});
+		const form = await superValidate(data, valibot(registerSchema));
 		const { username, email, password } = form.data;
 
 		if (!form.valid) return fail(400, { form });
+		if (form.data.passwordConfirm !== form.data.password) {
+			return setError(form, 'passwordConfirm', 'Passwords dont match');
+		}
 
 		const userExists = await db.query.user.findFirst({ where: (u) => eq(u.username, username) });
 		if (userExists) return setError(form, 'username', 'Username already exist!');
