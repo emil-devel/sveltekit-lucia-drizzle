@@ -1,6 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 import { redirect, setFlash } from 'sveltekit-flash-message/server';
 import { isAdmin, isSelf } from '$lib/permissions';
+import { sanitizeFormData } from '$lib/server/sanitize';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq, asc, and } from 'drizzle-orm';
@@ -13,7 +14,6 @@ import {
 	profilePhoneSchema,
 	profileBioSchema
 } from '$lib/valibot';
-import { sanitizeFormData } from '$lib/server/sanitize';
 
 export const load = (async (event) => {
 	if (!event.locals.authUser) throw redirect(302, '/login');
