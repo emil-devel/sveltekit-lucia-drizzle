@@ -2,6 +2,14 @@
 	"name": "sveltekit-lucia-drizzle",
 	"private": true,
 	"version": "0.0.1",
+	"keywords": [
+		"user management",
+		"user roles",
+		"lucia",
+		"sveltekit",
+		"drizzle",
+		"postgres"
+	],
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
