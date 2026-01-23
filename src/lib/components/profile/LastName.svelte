@@ -42,6 +42,7 @@
 						lastNameEdit = false;
 					}
 				}}
+				id="lastName"
 				spellcheck="false"
 			/>
 		</div>

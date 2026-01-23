@@ -40,7 +40,7 @@
 		use:bioEnhance
 	>
 		<input class="input" type="hidden" name="id" value={id} />
-		<label class="label" for="id"><span class="label-text">Bio</span></label>
+		<span class="label-text">Bio</span>
 		<!-- bio value provided via superforms JSON (kept in sync in script) -->
 		<button class="btn preset-tonal btn-sm" type="submit"> Submit </button>
 	</form>

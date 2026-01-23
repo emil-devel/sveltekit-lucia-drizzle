@@ -117,6 +117,7 @@
 								type="text"
 								name="username"
 								bind:value={$usernameForm.username}
+								id="username"
 								spellcheck="false"
 							/>
 							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
@@ -145,6 +146,7 @@
 								type="email"
 								name="email"
 								bind:value={$emailForm.email}
+								id="email"
 								spellcheck="false"
 							/>
 							<button class="ig-btn preset-tonal btn-sm" type="submit"> Submit </button>
@@ -194,13 +196,14 @@
 						</form>
 						<form method="post" action="?/role" use:roleEnhance>
 							<input class="input" type="hidden" name="id" value={id} />
-							<label class="label">
+							<label class="label" for="role">
 								<span class="label-text">Role</span>
 								<select
 									onchange={(e) => (e.currentTarget as HTMLSelectElement).form?.requestSubmit()}
 									bind:value={$roleForm.role}
 									class="select w-fit text-sm lowercase"
 									name="role"
+									id="role"
 								>
 									{#each roles as r}
 										<option value={r}>{r}</option>
