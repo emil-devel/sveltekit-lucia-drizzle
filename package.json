@@ -10,6 +10,7 @@
 		"drizzle",
 		"postgres"
 	],
+	"description": "User management with Lucia-Auth authentication and Roles (User, Redacteur, Admin). Realized with: Sveltekit, Skeleton UI, SuperForms, Valibot, Drizzle, Postgres Database.",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
