@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { profileBioSchema } from '$lib/valibot';
+	import { Tipex } from '@friendofsvelte/tipex';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
 
@@ -12,8 +13,7 @@
 		dataType: 'json'
 	});
 
-	// Tipex
-	import { Tipex } from '@friendofsvelte/tipex';
+	// Tipex editor setup
 	// Initial HTML content from server form
 	let body = $state($bioForm.bio ?? '');
 	// Editor instance binding (use a permissive type to avoid tiptap version type mismatches)
