@@ -4,6 +4,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { Popover, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { House, LogOut, Settings, UserRound, UsersRound } from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 
 	const logo_class = 'flex items-center gap-2';
 </script>
@@ -20,7 +21,7 @@
 				{@render siteName()}
 			</span>
 		{:else}
-			<a class={logo_class} href="/" title="zur Startseite">
+			<a class={logo_class} href={resolve('/')} title="zur Startseite">
 				{@render siteName()}
 			</a>
 		{/if}
@@ -33,7 +34,7 @@
 						class="btn preset-outlined-primary-200-800 btn-sm hover:preset-filled-primary-200-800"
 						class:preset-filled-primary-200-800={page.url.pathname === '/'}
 						aria-current={page.url.pathname === '/'}
-						href="/"
+						href={resolve('/')}
 					>
 						<House size="16" />
 						<span>Home</span>
@@ -45,7 +46,7 @@
 						class:preset-filled-primary-200-800={page.url.pathname === '/users'}
 						class:preset-tonal-primary={page.url.pathname.includes('/users')}
 						aria-current={page.url.pathname === '/users'}
-						href="/users"
+						href={resolve('/users')}
 					>
 						<UsersRound size="16" />
 						<span>Users</span>
@@ -82,7 +83,7 @@
 									</li>
 									{#if page.url.pathname !== `/users/${page.data.authUser.username}`}
 										<li>
-											<a class="anchor" href="/users/{page.data.authUser.username}">
+											<a class="anchor" href={resolve(`/users/${page.data.authUser.username}`)}>
 												<Settings size={16} />
 												<span>Settings</span>
 											</a>

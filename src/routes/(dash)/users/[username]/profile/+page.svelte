@@ -10,6 +10,7 @@
 	import Phone from '$lib/components/profile/Phone.svelte';
 	import Bio from '$lib/components/profile/Bio.svelte';
 	import { ArrowBigLeft, UserRound, UserRoundPen } from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 	const iconSize: number = 16;
 
 	let props: PageProps = $props();
@@ -80,7 +81,7 @@
 		</footer>
 	</div>
 	<div class="mt-8 flex items-center justify-between gap-4 border-t border-surface-200-800 p-2">
-		<a class="btn preset-tonal btn-sm" href="/users/{name}">
+		<a class="btn preset-tonal btn-sm" href={resolve(`/users/${name}`)}>
 			<ArrowBigLeft size={iconSize} />
 			{name}
 		</a>

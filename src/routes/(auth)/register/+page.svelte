@@ -6,6 +6,7 @@
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { fly, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
+	import { resolve } from '$app/paths';
 
 	let props: PageProps = $props();
 	let data = $state(props.data);
@@ -119,7 +120,7 @@
 				>
 					<span>Have Account?</span>
 					<ArrowRight size="12" />
-					<a href="/login" class="anchor">login</a>
+					<a href={resolve('/login')} class="anchor">login</a>
 				</p>
 			</div>
 		{/if}

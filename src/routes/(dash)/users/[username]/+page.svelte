@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { canManageUser, isAdmin as isAdminUtil, isSelf as isSelfUtil } from '$lib/permissions';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
@@ -205,7 +206,7 @@
 									name="role"
 									id="role"
 								>
-									{#each roles as r}
+									{#each roles as r, i (i)}
 										<option value={r}>{r}</option>
 									{/each}
 								</select>
@@ -263,14 +264,14 @@
 		</footer>
 	</div>
 	<div class="mt-8 flex items-center justify-between gap-4 border-t border-surface-200-800 p-2">
-		<a class="btn preset-tonal btn-sm" href="/users">
+		<a class="btn preset-tonal btn-sm" href={resolve('/users')}>
 			<ArrowBigLeft size={iconSize} />
 			Users
 		</a>
 		{#if isAdmin || isSelf}
 			<a
 				class="btn preset-filled-secondary-300-700 btn-sm"
-				href="/users/{$usernameForm.username}/profile"
+				href={resolve(`/users/${$usernameForm.username}/profile`)}
 			>
 				Profile
 				<UserRoundPen size={iconSize} />

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { Avatar, Pagination } from '@skeletonlabs/skeleton-svelte';
+	import { resolve } from '$app/paths';
+	import { Avatar, Pagination, type usePagination } from '@skeletonlabs/skeleton-svelte';
 	import { ArrowLeft, ArrowRight, Check, UsersRound, X } from '@lucide/svelte';
 
 	let props: PageProps = $props();
@@ -28,6 +29,8 @@
 	const start = $derived((page - 1) * PAGE_SIZE);
 	const end = $derived(start + PAGE_SIZE);
 	const paginated = $derived(filteredUsers.slice(start, end));
+
+	type PaginationApi = ReturnType<typeof usePagination>;
 </script>
 
 <svelte:head>
@@ -84,7 +87,7 @@
 				<dd class="my-2 card preset-filled-surface-100-900 card-hover">
 					<a
 						class="grid grid-cols-5 items-center border-r-[.25em] border-l-[.25em] border-surface-100-900 py-2 text-center hover:border-primary-300-700"
-						href="/users/{user.username}"
+						href={resolve(`/users/${user.username}`)}
 					>
 						<Avatar class="h-10 w-10 text-xs">
 							<Avatar.Image src={user.avatar} alt="Avatar of the user {user.username}" />
@@ -132,7 +135,7 @@
 							<ArrowLeft class="size-4" />
 						</Pagination.PrevTrigger>
 						<Pagination.Context>
-							{#snippet children(pagination: any)}
+							{#snippet children(pagination: PaginationApi)}
 								{#each pagination().pages as page, index (page)}
 									{#if page.type === 'page'}
 										<Pagination.Item {...page}>

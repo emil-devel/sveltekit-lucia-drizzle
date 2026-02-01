@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { UsersRound } from '@lucide/svelte';
 </script>
@@ -10,7 +11,7 @@
 			class:preset-filled-primary-200-800={page.url.pathname === '/users'}
 			class:preset-tonal-primary={page.url.pathname.includes('/users')}
 			aria-current={page.url.pathname === '/users'}
-			href="/users"
+			href={resolve('/users')}
 		>
 			<UsersRound size="16" />
 			<span>Users</span>

@@ -6,6 +6,7 @@
 	import { ArrowRight, Lock, LogIn, UserRound } from '@lucide/svelte';
 	import { fly, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
+	import { resolve } from '$app/paths';
 
 	let props: PageProps = $props();
 	let data = $state(props.data);
@@ -77,7 +78,7 @@
 				>
 					<span>Haven't Account?</span>
 					<ArrowRight size="12" />
-					<a href="/register" class="anchor">register</a>
+					<a href={resolve('/register')} class="anchor">register</a>
 				</p>
 			</div>
 		{/if}
