@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import { isSelf as isSelfUtil } from '$lib/permissions';
@@ -10,7 +11,6 @@
 	import Phone from '$lib/components/profile/Phone.svelte';
 	import Bio from '$lib/components/profile/Bio.svelte';
 	import { ArrowBigLeft, UserRound, UserRoundPen } from '@lucide/svelte';
-	import { resolve } from '$app/paths';
 	const iconSize: number = 16;
 
 	let props: PageProps = $props();

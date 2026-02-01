@@ -1,7 +1,10 @@
 <script lang="ts">
-	// import type { PageServerData } from './$types';
-
-	// let { data }: { data: PageServerData } = $props();
+	import { page } from '$app/state';
 </script>
 
-<h2 class="h4">Startpage</h2>
+<section class="mx-auto max-w-xs">
+	<h1 class="flex items-center justify-end gap-2 h4">
+		<span>Startpage</span>
+	</h1>
+	<p>authUser: {page.data.authUser?.username}</p>
+</section>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { resolve } from '$app/paths';
 	import { Avatar, Pagination, type usePagination } from '@skeletonlabs/skeleton-svelte';
+	import { resolve } from '$app/paths';
 	import { ArrowLeft, ArrowRight, Check, UsersRound, X } from '@lucide/svelte';
 
 	let props: PageProps = $props();

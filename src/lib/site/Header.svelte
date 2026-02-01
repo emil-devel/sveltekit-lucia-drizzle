@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import favicon from '$lib/assets/favicon.svg';
 	import { Popover, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { House, LogOut, Settings, UserRound, UsersRound } from '@lucide/svelte';
-	import { resolve } from '$app/paths';
 
 	const logo_class = 'flex items-center gap-2';
 </script>

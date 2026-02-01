@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { ArrowRight, Lock, LockOpen, LogIn, Mail, UserRound } from '@lucide/svelte';
+	import { resolve } from '$app/paths';
 	import { registerSchema } from '$lib/valibot';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { fly, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { resolve } from '$app/paths';
+	import { ArrowRight, Lock, LockOpen, LogIn, Mail, UserRound } from '@lucide/svelte';
 
 	let props: PageProps = $props();
 	let data = $state(props.data);
