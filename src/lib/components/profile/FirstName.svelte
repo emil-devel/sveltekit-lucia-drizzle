@@ -1,20 +1,38 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm, type SuperValidated } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { profileFirstNameSchema } from '$lib/valibot';
 	import { slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { UserRound } from '@lucide/svelte';
 
-	let props = $props();
-	let { id, isSelf, iconSize } = props;
+	type FirstNameFormValues = {
+		id: string;
+		firstName?: string | null;
+	};
+
+	type Props = {
+		id: string;
+		data: {
+			firstNameForm: SuperValidated<FirstNameFormValues>;
+		};
+		isSelf: boolean;
+		iconSize: number;
+	};
+
+	let props: Props = $props();
 	let data = $state(props.data);
+	let id = $derived(props.id);
+	let isSelf = $derived(props.isSelf);
+	let iconSize = $derived(props.iconSize);
 
 	const {
 		enhance: firstNameEnhance,
 		form: firstNameForm,
 		errors: firstNameErrors
-	} = superForm(data.firstNameForm, { validators: valibot(profileFirstNameSchema) });
+	} = superForm<FirstNameFormValues>(data.firstNameForm, {
+		validators: valibot(profileFirstNameSchema)
+	});
 
 	const errorsFirstName = $derived(($firstNameErrors.firstName ?? []) as string[]);
 
@@ -46,20 +64,20 @@
 				spellcheck="false"
 			/>
 		</div>
+		{#if errorsFirstName && $firstNameForm.firstName}
+			<div class="mx-auto max-w-xs space-y-1.5 pt-4 text-center text-sm" aria-live="polite">
+				{#each errorsFirstName as message, i (i)}
+					<p
+						class="card preset-filled-error-300-700 p-2"
+						transition:slide={{ duration: 140 }}
+						animate:flip={{ duration: 160 }}
+					>
+						{message}
+					</p>
+				{/each}
+			</div>
+		{/if}
 	</form>
-	{#if errorsFirstName && $firstNameForm.firstName}
-		<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-			{#each errorsFirstName as message, i (i)}
-				<p
-					class="card preset-filled-error-300-700 p-2"
-					transition:slide={{ duration: 140 }}
-					animate:flip={{ duration: 160 }}
-				>
-					{message}
-				</p>
-			{/each}
-		</div>
-	{/if}
 {:else}
 	<div>
 		<p class="label-text">First Name</p>

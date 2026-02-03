@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { PUBLIC_SITE_NAME } from '$env/static/public';
 	import { Avatar, Pagination, type usePagination } from '@skeletonlabs/skeleton-svelte';
 	import { resolve } from '$app/paths';
 	import { ArrowLeft, ArrowRight, Check, UsersRound, X } from '@lucide/svelte';
@@ -34,8 +35,8 @@
 </script>
 
 <svelte:head>
-	<title>Users</title>
-	<meta name="description" content="List of users" />
+	<title>User List - {PUBLIC_SITE_NAME}</title>
+	<meta name="description" content="Browse and manage users on {PUBLIC_SITE_NAME}." />
 </svelte:head>
 
 <article class="">

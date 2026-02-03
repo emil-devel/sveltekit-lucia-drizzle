@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { PUBLIC_SITE_NAME } from '$env/static/public';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { canManageUser, isAdmin as isAdminUtil, isSelf as isSelfUtil } from '$lib/permissions';
@@ -15,7 +16,7 @@
 		UserRound,
 		UserRoundCheck,
 		UserRoundPen,
-		UserRoundX
+		UserRoundX,
 	} from '@lucide/svelte';
 	const iconSize: number = 16;
 
@@ -30,18 +31,18 @@
 	const {
 		enhance: usernameEnhance,
 		errors: usernameErrors,
-		form: usernameForm
+		form: usernameForm,
 	} = superForm(data.usernameForm, {
 		validators: valibot(userNameSchema),
-		validationMethod: 'oninput'
+		validationMethod: 'oninput',
 	});
 	const {
 		enhance: emailEnhance,
 		errors: emailErrors,
-		form: emailForm
+		form: emailForm,
 	} = superForm(data.emailForm, {
 		validators: valibot(userEmailSchema),
-		validationMethod: 'oninput'
+		validationMethod: 'oninput',
 	});
 	const { enhance: activeEnhance, form: activeForm } = superForm(data.activeForm);
 	const { enhance: roleEnhance, form: roleForm } = superForm(data.roleForm);
@@ -61,8 +62,11 @@
 </script>
 
 <svelte:head>
-	<title>Seiten Titel</title>
-	<meta name="description" content="Seiten Beschreibung" />
+	<title>User {$usernameForm.username} - {PUBLIC_SITE_NAME}</title>
+	<meta
+		name="description"
+		content="Profile and details for user {$usernameForm.username} on {PUBLIC_SITE_NAME}."
+	/>
 </svelte:head>
 
 <section class="m-auto max-w-sm space-y-4">

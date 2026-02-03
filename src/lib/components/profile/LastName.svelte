@@ -1,20 +1,38 @@
 <script lang="ts">
 	import { profileLastNameSchema } from '$lib/valibot';
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm, type SuperValidated } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { UserRound } from '@lucide/svelte';
 
-	let props = $props();
-	let { id, isSelf, iconSize } = props;
+	type LastNameFormValues = {
+		id: string;
+		lastName?: string | null;
+	};
+
+	type Props = {
+		id: string;
+		data: {
+			lastNameForm: SuperValidated<LastNameFormValues>;
+		};
+		isSelf: boolean;
+		iconSize: number;
+	};
+
+	let props: Props = $props();
 	let data = $state(props.data);
+	let id = $derived(props.id);
+	let isSelf = $derived(props.isSelf);
+	let iconSize = $derived(props.iconSize);
 
 	const {
 		enhance: lastNameEnhance,
 		form: lastNameForm,
 		errors: lastNameErrors
-	} = superForm(data.lastNameForm, { validators: valibot(profileLastNameSchema) });
+	} = superForm<LastNameFormValues>(data.lastNameForm, {
+		validators: valibot(profileLastNameSchema)
+	});
 
 	const errorsLastName = $derived(($lastNameErrors.lastName ?? []) as string[]);
 
@@ -46,20 +64,20 @@
 				spellcheck="false"
 			/>
 		</div>
+		{#if errorsLastName && $lastNameForm.lastName}
+			<div class="mx-auto max-w-xs space-y-1.5 pt-4 text-center text-sm" aria-live="polite">
+				{#each errorsLastName as message, i (i)}
+					<p
+						class="card preset-filled-error-300-700 p-2"
+						transition:slide={{ duration: 140 }}
+						animate:flip={{ duration: 160 }}
+					>
+						{message}
+					</p>
+				{/each}
+			</div>
+		{/if}
 	</form>
-	{#if errorsLastName && $lastNameForm.lastName}
-		<div class="mx-auto max-w-xs space-y-1.5 text-center text-sm" aria-live="polite">
-			{#each errorsLastName as message, i (i)}
-				<p
-					class="card preset-filled-error-300-700 p-2"
-					transition:slide={{ duration: 140 }}
-					animate:flip={{ duration: 160 }}
-				>
-					{message}
-				</p>
-			{/each}
-		</div>
-	{/if}
 {:else}
 	<div>
 		<p class="label-text">Last Name</p>

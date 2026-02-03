@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { PUBLIC_SITE_NAME } from '$env/static/public';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import favicon from '$lib/assets/favicon.svg';
@@ -11,7 +12,7 @@
 
 {#snippet siteName()}
 	<img src={favicon} alt="Logo: EWDnet" width="32" height="32" />
-	<span>Site Name</span>
+	<span>{PUBLIC_SITE_NAME}</span>
 {/snippet}
 
 <div class="flex items-center justify-between gap-4">

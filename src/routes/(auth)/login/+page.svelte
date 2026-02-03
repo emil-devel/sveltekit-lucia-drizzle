@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { PUBLIC_SITE_NAME } from '$env/static/public';
 	import { resolve } from '$app/paths';
 	import { loginSchema } from '$lib/valibot';
 	import { valibot } from 'sveltekit-superforms/adapters';
@@ -12,7 +13,7 @@
 	let data = $state(props.data);
 
 	const { enhance, errors, form } = superForm(data.form, {
-		validators: valibot(loginSchema)
+		validators: valibot(loginSchema),
 	});
 
 	const formErrors = $derived(
@@ -21,7 +22,8 @@
 </script>
 
 <svelte:head>
-	<title>LogIn</title>
+	<title>Sign In - {PUBLIC_SITE_NAME}</title>
+	<meta name="description" content="Sign in to your account on {PUBLIC_SITE_NAME}." />
 </svelte:head>
 
 <section class="mx-auto max-w-xs">

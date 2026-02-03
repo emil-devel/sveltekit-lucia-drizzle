@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { PUBLIC_SITE_NAME } from '$env/static/public';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
@@ -21,7 +22,7 @@
 	// Forms
 	const { form: avatarForm } = superForm(data.avatarForm, { warnings: { duplicateId: false } });
 	const { form: firstNameForm } = superForm(data.firstNameForm, {
-		warnings: { duplicateId: false }
+		warnings: { duplicateId: false },
 	});
 	const { form: lastNameForm } = superForm(data.lastNameForm, { warnings: { duplicateId: false } });
 
@@ -30,8 +31,8 @@
 </script>
 
 <svelte:head>
-	<title>User Profile: {name}</title>
-	<meta name="description" content="User Profile: First Name, Last Name, Phone, Bio." />
+	<title>User {name} Profile - {PUBLIC_SITE_NAME}</title>
+	<meta name="description" content="Profile and details for user {name} on {PUBLIC_SITE_NAME}." />
 </svelte:head>
 
 <section class="m-auto max-w-xl space-y-4">
@@ -66,7 +67,7 @@
 					<span>Profile</span>
 				</h2>
 				<AvatarUpload {id} {data} {isSelf} {iconSize} />
-				<div class="flex gap-2">
+				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 					<FirstName {id} {data} {isSelf} {iconSize} />
 					<LastName {id} {data} {isSelf} {iconSize} />
 				</div>
