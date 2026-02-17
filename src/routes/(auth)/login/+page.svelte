@@ -13,7 +13,7 @@
 	let data = $state(props.data);
 
 	const { enhance, errors, form } = superForm(data.form, {
-		validators: valibot(loginSchema),
+		validators: valibot(loginSchema)
 	});
 
 	const formErrors = $derived(
