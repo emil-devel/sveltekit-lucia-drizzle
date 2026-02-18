@@ -9,12 +9,13 @@
 	import { flip } from 'svelte/animate';
 	import { ArrowRight, Lock, LockOpen, LogIn, Mail, UserRound } from '@lucide/svelte';
 
-	let props: PageProps = $props();
-	let data = $state(props.data);
+	let { data }: PageProps = $props();
 
-	const { enhance, errors, form } = superForm(data.form, {
-		validators: valibot(registerSchema),
-	});
+	const { enhance, errors, form } = $derived(
+		superForm(data.form, {
+			validators: valibot(registerSchema)
+		})
+	);
 
 	const formErrors = $derived(
 		(
@@ -23,7 +24,7 @@
 				$errors.email ?? [],
 				$errors.password ?? [],
 				$errors.passwordConfirm ?? [],
-				$errors._errors ?? [],
+				$errors._errors ?? []
 			] as string[][]
 		).flat()
 	);

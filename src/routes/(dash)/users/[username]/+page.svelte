@@ -16,37 +16,40 @@
 		UserRound,
 		UserRoundCheck,
 		UserRoundPen,
-		UserRoundX,
+		UserRoundX
 	} from '@lucide/svelte';
 	const iconSize: number = 16;
 
 	import { ROLES } from '$lib/permissions';
 	const roles = ROLES;
 
-	let props: PageProps = $props();
-	let data = $state(props.data);
+	let { data }: PageProps = $props();
 
-	const { id, createdAt, firstName, lastName, updatedAt } = data;
+	const { id, createdAt, firstName, lastName, updatedAt } = $derived(data);
 
 	const {
 		enhance: usernameEnhance,
 		errors: usernameErrors,
-		form: usernameForm,
-	} = superForm(data.usernameForm, {
-		validators: valibot(userNameSchema),
-		validationMethod: 'oninput',
-	});
+		form: usernameForm
+	} = $derived(
+		superForm(data.usernameForm, {
+			validators: valibot(userNameSchema),
+			validationMethod: 'oninput'
+		})
+	);
 	const {
 		enhance: emailEnhance,
 		errors: emailErrors,
-		form: emailForm,
-	} = superForm(data.emailForm, {
-		validators: valibot(userEmailSchema),
-		validationMethod: 'oninput',
-	});
-	const { enhance: activeEnhance, form: activeForm } = superForm(data.activeForm);
-	const { enhance: roleEnhance, form: roleForm } = superForm(data.roleForm);
-	const { enhance: deleteEnhance } = superForm(data.deleteForm);
+		form: emailForm
+	} = $derived(
+		superForm(data.emailForm, {
+			validators: valibot(userEmailSchema),
+			validationMethod: 'oninput'
+		})
+	);
+	const { enhance: activeEnhance, form: activeForm } = $derived(superForm(data.activeForm));
+	const { enhance: roleEnhance, form: roleForm } = $derived(superForm(data.roleForm));
+	const { enhance: deleteEnhance } = $derived(superForm(data.deleteForm));
 
 	const errorsUsername = $derived(($usernameErrors.username ?? []) as string[]);
 	const errorsEmail = $derived(($emailErrors.email ?? []) as string[]);

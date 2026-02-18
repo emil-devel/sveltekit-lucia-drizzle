@@ -1,20 +1,35 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm, type SuperValidated } from 'sveltekit-superforms';
 	import { profilePhoneSchema } from '$lib/valibot';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { Phone } from '@lucide/svelte';
 
-	let props = $props();
-	let { id, isSelf, iconSize } = props;
-	let data = $state(props.data);
+	type PhoneFormValues = {
+		id: string;
+		phone?: string | null;
+	};
+
+	type Props = {
+		id: string;
+		data: {
+			phoneForm: SuperValidated<PhoneFormValues>;
+		};
+		isSelf: boolean;
+		iconSize: number;
+	};
+
+	let props: Props = $props();
+	let { data, id, isSelf, iconSize } = $derived(props);
 
 	const {
 		enhance: phoneEnhance,
 		form: phoneForm,
 		errors: phoneErrors
-	} = superForm(data.phoneForm, { validators: valibot(profilePhoneSchema) });
+	} = $derived(
+		superForm<PhoneFormValues>(data.phoneForm, { validators: valibot(profilePhoneSchema) })
+	);
 
 	const errorsPhone = $derived(($phoneErrors.phone ?? []) as string[]);
 

@@ -14,17 +14,22 @@
 	import { ArrowBigLeft, UserRound, UserRoundPen } from '@lucide/svelte';
 	const iconSize: number = 16;
 
-	let props: PageProps = $props();
-	let data = $state(props.data);
+	let { data }: PageProps = $props();
 
 	// Destructure basic fields
-	const { id, name, userId } = data;
+	const { id, name, userId } = $derived(data);
 	// Forms
-	const { form: avatarForm } = superForm(data.avatarForm, { warnings: { duplicateId: false } });
-	const { form: firstNameForm } = superForm(data.firstNameForm, {
-		warnings: { duplicateId: false },
-	});
-	const { form: lastNameForm } = superForm(data.lastNameForm, { warnings: { duplicateId: false } });
+	const { form: avatarForm } = $derived(
+		superForm(data.avatarForm, { warnings: { duplicateId: false } })
+	);
+	const { form: firstNameForm } = $derived(
+		superForm(data.firstNameForm, {
+			warnings: { duplicateId: false }
+		})
+	);
+	const { form: lastNameForm } = $derived(
+		superForm(data.lastNameForm, { warnings: { duplicateId: false } })
+	);
 
 	// Use helper-based permission check
 	const isSelf = $derived(isSelfUtil(page.data.authUser.id, userId));

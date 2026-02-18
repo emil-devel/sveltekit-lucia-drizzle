@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { FileUpload } from '@skeletonlabs/skeleton-svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { fromAction, type Attachment } from 'svelte/attachments';
+	import { FileUpload } from '@skeletonlabs/skeleton-svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibot } from 'sveltekit-superforms/adapters';
 	import { profileAvatarSchema } from '$lib/valibot';
@@ -10,17 +10,19 @@
 	import { ImagePlus, Trash, UserRoundPen, X } from '@lucide/svelte';
 
 	let props = $props();
-	let { id, isSelf, iconSize } = props;
-	let data = $state(props.data);
+	let { id, isSelf, iconSize } = $derived(props);
+	let { data } = $derived(props);
 
 	const {
 		enhance: avatarEnhance,
 		errors: avatarErrors,
 		form: avatarForm
-	} = superForm(data.avatarForm, {
-		validators: valibot(profileAvatarSchema),
-		validationMethod: 'onblur'
-	});
+	} = $derived(
+		superForm(data.avatarForm, {
+			validators: valibot(profileAvatarSchema),
+			validationMethod: 'onblur'
+		})
+	);
 
 	const errorsAvatar = $derived(($avatarErrors.avatar ?? []) as string[]);
 

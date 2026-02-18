@@ -9,12 +9,13 @@
 	import { fly, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 
-	let props: PageProps = $props();
-	let data = $state(props.data);
+	let { data }: PageProps = $props();
 
-	const { enhance, errors, form } = superForm(data.form, {
-		validators: valibot(loginSchema)
-	});
+	const { enhance, errors, form } = $derived(
+		superForm(data.form, {
+			validators: valibot(loginSchema)
+		})
+	);
 
 	const formErrors = $derived(
 		([$errors.username ?? [], $errors.password ?? []] as string[][]).flat()

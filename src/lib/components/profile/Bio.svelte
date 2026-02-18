@@ -6,13 +6,15 @@
 	import { valibot } from 'sveltekit-superforms/adapters';
 
 	let props = $props();
-	let { id, isSelf } = props;
-	let data = $state(props.data);
+	let { id, isSelf } = $derived(props);
+	let { data } = $derived(props);
 
-	const { enhance: bioEnhance, form: bioForm } = superForm(data.bioForm, {
-		validators: valibot(profileBioSchema),
-		dataType: 'json'
-	});
+	const { enhance: bioEnhance, form: bioForm } = $derived(
+		superForm(data.bioForm, {
+			validators: valibot(profileBioSchema),
+			dataType: 'json'
+		})
+	);
 
 	// Tipex editor setup
 	// Initial HTML content from server form
