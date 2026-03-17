@@ -20,9 +20,7 @@
 		iconSize: number;
 	};
 
-	let props: Props = $props();
-	let { data } = $derived(props);
-	let { id, isSelf, iconSize } = $derived(props);
+	let { data, id, isSelf, iconSize }: Props = $props();
 
 	const {
 		enhance: lastNameEnhance,
